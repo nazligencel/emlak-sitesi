@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 26 26 46;
+    /* #1a1a2e */
+    --color-secondary: 229 192 94;
+    /* #E5C05E */
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+/* Force override to ensure Gold color updates immediately */
+/* Luxury Gold Gradient Definitions */
+@layer utilities {
+  .bg-secondary {
+    background: linear-gradient(135deg, #BF953F 0%, #FCF6BA 50%, #B38728 100%) !important;
+    background-size: 200% auto;
+    transition: 0.5s;
+    border: none !important;
+  }
+
+  .bg-secondary:hover {
+    background-position: right center !important;
+  }
+
+  .text-secondary {
+    color: #F4C430 !important;
+    /* Bright Saffron Gold for text readability */
+    /* Optional: Add a slight gold text shadow if needed, but clean is better */
+  }
+
+  .border-secondary {
+    border-color: #BF953F !important;
+  }
+}
