@@ -39,7 +39,7 @@ export const ListingProvider = ({ children }) => {
             const processedListing = {
                 ...newListing,
                 price: safeNumber(newListing.price),
-                beds: safeNumber(newListing.beds),
+                beds: newListing.beds,
                 baths: safeNumber(newListing.baths),
                 sqm: safeNumber(newListing.sqm),
                 building_age: safeNumber(newListing.building_age),

@@ -42,7 +42,7 @@ const ListingCard = ({ listing, index }) => {
 
                     <div className="flex items-center text-slate-500 mb-4 text-sm">
                         <MapPin size={16} className="mr-1 text-secondary" />
-                        <span className="line-clamp-1">{listing.location.includes('Antalya') ? listing.location : `Antalya, ${listing.location}`}</span>
+                        <span className="line-clamp-1">{listing.location}</span>
                     </div>
 
                     <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-slate-600 text-sm">

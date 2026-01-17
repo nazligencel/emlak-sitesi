@@ -83,7 +83,7 @@ const ListingDetail = () => {
                                 initial={{ opacity: 0, scale: 1.05 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0 }}
-                                transition={{ duration: 0.4 }}
+                                transition={{ duration: 0.2 }}
                                 className="w-full h-full object-cover"
                             />
                         </AnimatePresence>
@@ -134,7 +134,7 @@ const ListingDetail = () => {
                                     <h1 className="text-3xl md:text-5xl font-bold mb-2 leading-tight shadow-md">{listing.title}</h1>
                                     <div className="flex items-center gap-2 text-slate-200 text-lg">
                                         <MapPin size={20} className="text-secondary" />
-                                        {listing.location.includes('Antalya') ? listing.location : `Antalya, ${listing.location}`}
+                                        {listing.location}
                                     </div>
                                 </div>
                                 <div className="text-left md:text-right">
@@ -264,7 +264,7 @@ const ListingDetail = () => {
                                             scrolling="no"
                                             marginHeight="0"
                                             marginWidth="0"
-                                            src={`https://maps.google.com/maps?q=${encodeURIComponent(listing.location.includes('Antalya') ? listing.location : 'Antalya ' + listing.location)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
+                                            src={`https://maps.google.com/maps?q=${encodeURIComponent(listing.location)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
                                             className="w-full h-full grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
                                         ></iframe>
                                     </div>
