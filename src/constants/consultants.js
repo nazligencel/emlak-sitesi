@@ -1,14 +1,22 @@
 export const CONSULTANTS = [
     {
         id: 1,
+        name: "Mesut TOPCU",
+        role: "Müteahhit",
+        image: "/consultants/mesut_topcu.jpg",
+        phone: "0(533) 398 79 79",
+        email: "mtopcu07@hotmail.com"
+    },
+    {
+        id: 2,
         name: "Mehmet TOPCU",
-        role: "Kurucu",
-        image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1000&auto=format&fit=crop",
+        role: "Müteahhit",
+        image: "/consultants/mehmet_topcu.jpg",
         phone: "0(531) 360 07 34",
         email: "topcuinsaatemlak@gmail.com"
     },
     {
-        id: 2,
+        id: 3,
         name: "Burak TOPCU",
         role: "Gayrimenkul Danışmanı",
         image: "/consultants/burak_topcu.jpg",
@@ -16,10 +24,10 @@ export const CONSULTANTS = [
         email: "brktopcuu07@gmail.com"
     },
     {
-        id: 3,
-        name: "Ahmet EROL",
+        id: 4,
+        name: "Ahmet Erol",
         role: "Gayrimenkul Danışmanı",
-        image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=1000&auto=format&fit=crop",
+        image: "/consultants/ahmet_erol.jpg",
         phone: "0(545) 532 05 22",
         email: "ahmetterol07@gmail.com"
     }

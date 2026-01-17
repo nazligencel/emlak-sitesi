@@ -16,8 +16,9 @@ const Listings = () => {
     }, [location.state]);
 
     const filteredListings = listings.filter(listing =>
-        listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        listing.location.toLowerCase().includes(searchTerm.toLowerCase())
+        listing.title.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
+        listing.location.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
+        (listing.listing_no && listing.listing_no.toString().includes(searchTerm))
     );
 
     return (
@@ -31,7 +32,7 @@ const Listings = () => {
                         <div className="relative">
                             <input
                                 type="text"
-                                placeholder="Konum veya ilan adı ile arama yapın..."
+                                placeholder="İlan No, Konum veya Başlık ile arama yapın..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder-slate-400 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all"

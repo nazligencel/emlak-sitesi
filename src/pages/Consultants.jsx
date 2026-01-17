@@ -4,7 +4,7 @@ import { CONSULTANTS } from '../constants/consultants';
 const Consultants = () => {
     return (
         <div className="pt-24 pb-20 min-h-screen bg-primary">
-            <div className="container mx-auto px-6">
+            <div className="w-full max-w-[1800px] mx-auto px-6">
                 <div className="text-center mb-16">
                     <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Uzman Ekibimiz</h1>
                     <p className="text-slate-300 text-xl max-w-2xl mx-auto">
@@ -12,7 +12,7 @@ const Consultants = () => {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {CONSULTANTS.map((consultant) => (
                         <div key={consultant.id} className="bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-shadow border border-slate-100">
                             <div className="aspect-[3/4] overflow-hidden">
@@ -20,6 +20,7 @@ const Consultants = () => {
                                     src={consultant.image}
                                     alt={consultant.name}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    style={{ objectPosition: '50% 15%' }}
                                 />
                             </div>
                             <div className="p-6">
