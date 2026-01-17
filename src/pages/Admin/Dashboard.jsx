@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, Edit, Plus, X, Search } from 'lucide-react';
 import { CONSULTANTS } from '../../constants/consultants';
+import { LOCATIONS } from '../../constants/locations';
 
 const Dashboard = () => {
     const { listings, addListing, updateListing, deleteListing, uploadImages } = useListings(); // Use uploadImages
@@ -14,7 +15,16 @@ const Dashboard = () => {
     const [editingId, setEditingId] = useState(null);
     const [newImages, setNewImages] = useState([]); // { file, preview, id }
     const [uploading, setUploading] = useState(false);
+
     const [searchTerm, setSearchTerm] = useState('');
+    const [locCity, setLocCity] = useState('');
+    const [locDistrict, setLocDistrict] = useState('');
+
+    useEffect(() => {
+        if (locCity && locDistrict) {
+            setForm(prev => ({ ...prev, location: `${locDistrict}, ${locCity}` }));
+        }
+    }, [locCity, locDistrict]);
 
     // ... (rest of state)
 
@@ -83,6 +93,40 @@ const Dashboard = () => {
             ...listing,
             images: listingImages,
         });
+
+        // Parse Location
+        let foundCity = 'Antalya';
+        let foundDistrict = '';
+
+        const loc = listing.location || '';
+        const parts = loc.split(',').map(s => s.trim());
+
+        if (parts.length > 1) {
+            // Check formatted "District, City" or "City, District"
+            if (Object.keys(LOCATIONS).includes(parts[1])) {
+                foundCity = parts[1];
+                foundDistrict = parts[0];
+            } else if (Object.keys(LOCATIONS).includes(parts[0])) {
+                foundCity = parts[0];
+                foundDistrict = parts[1];
+            }
+        } else {
+            // Try to find if the string matches a district or city
+            if (Object.keys(LOCATIONS).includes(loc)) {
+                foundCity = loc;
+            } else {
+                for (const [c, districts] of Object.entries(LOCATIONS)) {
+                    if (districts.includes(loc)) {
+                        foundCity = c;
+                        foundDistrict = loc;
+                        break;
+                    }
+                }
+            }
+        }
+
+        setLocCity(foundCity);
+        setLocDistrict(foundDistrict);
         setNewImages([]);
         setView('form');
     };
@@ -120,16 +164,19 @@ const Dashboard = () => {
     };
 
     const generateListingNo = () => {
-        let unique = false;
-        let num = '';
-        while (!unique) {
-            num = Math.floor(1000000 + Math.random() * 9000000).toString(); // 7 digits: 1000000 to 9999999
-            // Check against existing listings
-            // eslint-disable-next-line
-            const exists = listings.some(l => l.listing_no === num);
-            if (!exists) unique = true;
+        // Parse listing numbers to find the highest existing number using the new sequence
+        // Old system used random 7-digit numbers (>= 1,000,000)
+        // We filter those out to start our new sequence from 500
+        const sequentialNumbers = listings
+            .map(l => parseInt(l.listing_no))
+            .filter(n => !isNaN(n) && n < 1000000);
+
+        if (sequentialNumbers.length === 0) {
+            return "500";
         }
-        return num;
+
+        const maxNum = Math.max(...sequentialNumbers);
+        return (maxNum + 1).toString();
     };
 
     const handleSubmit = async (e) => {
@@ -212,7 +259,14 @@ const Dashboard = () => {
 
                         <div className="flex gap-4">
                             <button
-                                onClick={() => { setEditingId(null); setForm(initialFormState); setNewImages([]); setView('form'); }}
+                                onClick={() => {
+                                    setEditingId(null);
+                                    setForm(initialFormState);
+                                    setNewImages([]);
+                                    setLocCity('');
+                                    setLocDistrict('');
+                                    setView('form');
+                                }}
                                 className="bg-secondary text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-secondary/90 transition-colors"
                             >
                                 <Plus size={20} /> Yeni İlan
@@ -336,22 +390,32 @@ const Dashboard = () => {
                             <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">Lokasyon ve Gayrimenkul Tipi</h3>
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="label">İl / İlçe / Mahalle</label>
-                                    <select name="location" value={form.location} onChange={handleChange} required className="input">
-                                        <option value="" disabled>Seçiniz</option>
-                                        <option value="Antalya, Lara">Lara</option>
-                                        <option value="Antalya, Konyaaltı">Konyaaltı</option>
-                                        <option value="Antalya, Muratpaşa">Muratpaşa</option>
-                                        <option value="Antalya, Kepez">Kepez</option>
-                                        <option value="Antalya, Döşemealtı">Döşemealtı</option>
-                                        <option value="Antalya, Kundu">Kundu</option>
-                                        <option value="Antalya, Altıntaş">Altıntaş</option>
-                                        <option value="Antalya, Aksu">Aksu</option>
-                                        <option value="Antalya, Serik">Serik</option>
-                                        <option value="Antalya, Kemer">Kemer</option>
-                                        <option value="Antalya, Kaş">Kaş</option>
-                                        <option value="Antalya, Alanya">Alanya</option>
-                                        <option value="Diğer">Diğer</option>
+                                    <label className="label">İl</label>
+                                    <select
+                                        value={locCity}
+                                        onChange={(e) => {
+                                            setLocCity(e.target.value);
+                                            setLocDistrict('');
+                                        }}
+                                        className="input mb-4"
+                                    >
+                                        <option value="">İl Seçiniz</option>
+                                        {Object.keys(LOCATIONS).map(city => (
+                                            <option key={city} value={city}>{city}</option>
+                                        ))}
+                                    </select>
+
+                                    <label className="label">İlçe</label>
+                                    <select
+                                        value={locDistrict}
+                                        onChange={(e) => setLocDistrict(e.target.value)}
+                                        disabled={!locCity}
+                                        className="input"
+                                    >
+                                        <option value="">İlçe Seçiniz</option>
+                                        {locCity && LOCATIONS[locCity]?.map(dist => (
+                                            <option key={dist} value={dist}>{dist}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div>
@@ -424,7 +488,7 @@ const Dashboard = () => {
                                 </div>
                                 <div>
                                     <label className="label">Oda Sayısı</label>
-                                    <input type="number" name="beds" value={form.beds} onChange={handleChange} className="input" />
+                                    <input type="text" name="beds" value={form.beds} onChange={handleChange} className="input" />
                                 </div>
                                 <div>
                                     <label className="label">Banyo Sayısı</label>

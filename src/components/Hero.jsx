@@ -2,13 +2,18 @@ import { Search, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LOCATIONS } from '../constants/locations';
 
 const Hero = () => {
     const navigate = useNavigate();
+    const [selectedCity, setSelectedCity] = useState('Antalya');
     const [selectedDistrict, setSelectedDistrict] = useState('');
 
     const handleSearch = () => {
-        navigate('/ilanlar', { state: { location: selectedDistrict } });
+        const searchTerm = selectedDistrict
+            ? `${selectedDistrict}, ${selectedCity}`
+            : selectedCity;
+        navigate('/ilanlar', { state: { location: searchTerm } });
     };
 
     return (
@@ -16,7 +21,7 @@ const Hero = () => {
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <img
-                    src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80"
+                    src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=2600&auto=format&fit=crop" /* Ultra Modern White Villa */
                     alt="Modern Luxury Architecture"
                     className="w-full h-full object-cover"
                 />
@@ -53,33 +58,40 @@ const Hero = () => {
                     transition={{ duration: 0.8, delay: 0.4 }}
                     className="bg-white/10 backdrop-blur-md p-4 rounded-full border border-white/20 shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4 relative z-30"
                 >
-                    {/* Fixed City Display */}
-                    <div className="flex items-center gap-3 px-6 py-3 bg-white/5 rounded-full border border-white/10">
-                        <MapPin className="text-secondary" size={20} />
-                        <span className="text-white font-medium">Antalya</span>
+                    {/* City Selector */}
+                    <div className="relative min-w-[160px]">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">
+                            <MapPin size={20} />
+                        </div>
+                        <select
+                            className="w-full bg-white/5 border border-white/10 text-white pl-12 pr-8 py-3.5 rounded-full outline-none focus:ring-2 focus:ring-secondary appearance-none cursor-pointer font-medium hover:bg-white/10 transition-colors [&>option]:text-slate-900"
+                            value={selectedCity}
+                            onChange={(e) => {
+                                setSelectedCity(e.target.value);
+                                setSelectedDistrict('');
+                            }}
+                        >
+                            {Object.keys(LOCATIONS).map(city => (
+                                <option key={city} value={city}>{city}</option>
+                            ))}
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                        </div>
                     </div>
 
                     {/* District/Neighborhood Selector */}
                     <div className="flex-1 relative">
                         <select
-                            className="w-full bg-white/90 text-slate-800 px-6 py-3.5 rounded-full outline-none focus:ring-2 focus:ring-secondary appearance-none cursor-pointer font-medium"
+                            className="w-full bg-white/90 text-slate-800 px-6 py-3.5 rounded-full outline-none focus:ring-2 focus:ring-secondary appearance-none cursor-pointer font-medium disabled:opacity-70 disabled:cursor-not-allowed"
                             value={selectedDistrict}
                             onChange={(e) => setSelectedDistrict(e.target.value)}
+                            disabled={!selectedCity}
                         >
-                            <option value="">Tüm Bölgeler</option>
-                            <option value="Lara">Lara</option>
-                            <option value="Konyaaltı">Konyaaltı</option>
-                            <option value="Muratpaşa">Muratpaşa</option>
-                            <option value="Kepez">Kepez</option>
-                            <option value="Döşemealtı">Döşemealtı</option>
-                            <option value="Kundu">Kundu</option>
-                            <option value="Altıntaş">Altıntaş</option>
-                            <option value="Aksu">Aksu</option>
-                            <option value="Serik">Serik</option>
-                            <option value="Kemer">Kemer</option>
-                            <option value="Kaş">Kaş</option>
-                            <option value="Alanya">Alanya</option>
-                            <option value="Diğer">Diğer</option>
+                            <option value="">{selectedCity ? `${selectedCity} - Tüm Bölgeler` : 'Önce Şehir Seçiniz'}</option>
+                            {selectedCity && LOCATIONS[selectedCity]?.map(district => (
+                                <option key={district} value={district}>{district}</option>
+                            ))}
                         </select>
                         {/* Custom Arrow */}
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
