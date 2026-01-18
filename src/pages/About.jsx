@@ -48,7 +48,7 @@ const About = () => {
                                 birleştirerek, estetiğin ve konforun uluslararası dilini projelerimize yansıtıyoruz.
                             </p>
                             <p>
-                                <strong className="text-white">Topcu İnşaat Gayrimenkul</strong> olarak, estetik ve konforu, güvenilir emlak danışmanlığı ile buluşturuyor;
+                                <strong className="text-white">Topcu İnşaat & Gayrimenkul</strong> olarak, estetik ve konforu, güvenilir emlak danışmanlığı ile buluşturuyor;
                                 sadece bir konut değil, prestijli bir yaşam kültürü ve değer kazanan bir gelecek vaat ediyoruz.
                             </p>
                         </div>

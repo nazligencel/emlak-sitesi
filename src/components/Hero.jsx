@@ -48,7 +48,7 @@ const Hero = () => {
                     transition={{ duration: 0.8, delay: 0.2 }}
                     className="text-lg md:text-xl text-slate-100 mb-10 max-w-2xl mx-auto font-light drop-shadow-md"
                 >
-                    Topcu İnşaat Gayrimenkul güvencesiyle, lüks ve konforun buluştuğu en özel portföyler.
+                    Topcu İnşaat & Gayrimenkul güvencesiyle, lüks ve konforun buluştuğu en özel portföyler.
                 </motion.p>
 
                 {/* Search Bar */}

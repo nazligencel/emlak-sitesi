@@ -12,7 +12,7 @@ const Footer = () => {
                         <Link to="/" className="flex items-center gap-3">
                             <img src="/logo.png" alt="Topcu Logo" className="h-12 w-auto object-contain brightness-0 invert" />
                             <span className="text-xl font-bold text-white tracking-tight">
-                                Topcu İnşaat
+                                Topcu İnşaat & Gayrimenkul
                             </span>
                         </Link>
                         <p className="text-slate-400 leading-relaxed text-sm">
@@ -80,7 +80,7 @@ const Footer = () => {
                             </li>
                             <li className="flex items-center gap-3">
                                 <Mail className="text-secondary shrink-0" size={20} />
-                                <span className="text-sm">info@topcuinsaat.com</span>
+                                <span className="text-sm">topcuinsaatemlak@gmail.com</span>
                             </li>
                         </ul>
                     </div>
@@ -91,7 +91,7 @@ const Footer = () => {
             <div className="border-t border-slate-800 bg-black/20">
                 <div className="container mx-auto px-6 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-slate-500 text-sm">
-                        © 2026 Topcu İnşaat Gayrimenkul. Tüm hakları saklıdır.
+                        © 2026 Topcu İnşaat & Gayrimenkul. Tüm hakları saklıdır.
                     </p>
                     <div className="flex gap-6 text-sm text-slate-500">
                         <a href="#" className="hover:text-secondary transition-colors">Gizlilik Politikası</a>
