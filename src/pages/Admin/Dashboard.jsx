@@ -43,25 +43,30 @@ const Dashboard = () => {
         title: '',
         location: '',
         price: '',
+        currency: 'TL',
         type: 'Daire',
         status: 'Satılık',
         beds: '',
         baths: '',
-        sqm: '',
+        net_sqm: '',
+        gross_sqm: '',
         building_age: '',
         floor_location: '',
         total_floors: '',
-        heating: 'Kombi',
+        heating: 'Doğalgaz',
         kitchen: 'Kapalı',
+        facade: '',
         balcony: false,
         elevator: false,
-        parking: false,
+        parking: 'Yok',
         furnished: false,
         usage_status: 'Boş',
         in_complex: false,
         dues: '',
+        deposit: '',
         complex_name: '',
         loan_eligible: true,
+        tapu_status: '',
         title_deed_status: 'Kat Mülkiyeti',
         from_who: 'Sahibinden',
         swap: false,
@@ -368,8 +373,11 @@ const Dashboard = () => {
                                 </div>
                                 <div>
                                     <label className="label">Para Birimi</label>
-                                    <select className="input" disabled>
-                                        <option>TL</option>
+                                    <select name="currency" value={form.currency} onChange={handleChange} className="input">
+                                        <option value="TL">TL</option>
+                                        <option value="USD">USD</option>
+                                        <option value="EUR">EUR</option>
+                                        <option value="GBP">GBP</option>
                                     </select>
                                 </div>
                                 <div>
@@ -439,7 +447,8 @@ const Dashboard = () => {
                                         <option value="Villa">Villa</option>
                                         <option value="Rezidans">Rezidans</option>
                                         <option value="Arsa">Arsa</option>
-                                        <option value="İşyeri">İşyeri</option>
+                                        <option value="Tarla">Tarla</option>
+                                        <option value="Dükkan">Dükkan</option>
                                     </select>
                                 </div>
                                 <div>
@@ -447,6 +456,7 @@ const Dashboard = () => {
                                     <select name="status" value={form.status} onChange={handleChange} className="input">
                                         <option value="Satılık">Satılık</option>
                                         <option value="Kiralık">Kiralık</option>
+                                        <option value="Devren Satılık">Devren Satılık</option>
                                     </select>
                                 </div>
                                 <div>
@@ -484,8 +494,12 @@ const Dashboard = () => {
                             <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">Gayrimenkul Detayları</h3>
                             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 <div>
-                                    <label className="label">Metrekare (m²)</label>
-                                    <input type="number" name="sqm" value={form.sqm} onChange={handleChange} required className="input" />
+                                    <label className="label">Net Metrekare (m²)</label>
+                                    <input type="number" name="net_sqm" value={form.net_sqm} onChange={handleChange} required className="input" />
+                                </div>
+                                <div>
+                                    <label className="label">Brüt Metrekare (m²)</label>
+                                    <input type="number" name="gross_sqm" value={form.gross_sqm} onChange={handleChange} required className="input" />
                                 </div>
                                 <div>
                                     <label className="label">Oda Sayısı</label>
@@ -510,6 +524,7 @@ const Dashboard = () => {
                                 <div>
                                     <label className="label">Isıtma</label>
                                     <select name="heating" value={form.heating} onChange={handleChange} className="input">
+                                        <option value="Doğalgaz">Doğalgaz</option>
                                         <option value="Kombi">Kombi</option>
                                         <option value="Merkezi">Merkezi</option>
                                         <option value="Yerden Isıtma">Yerden Isıtma</option>
@@ -520,6 +535,44 @@ const Dashboard = () => {
                                 <div>
                                     <label className="label">Aidat (TL)</label>
                                     <input type="number" name="dues" value={form.dues} onChange={handleChange} className="input" />
+                                </div>
+                                <div>
+                                    <label className="label">Mutfak Tipi</label>
+                                    <select name="kitchen" value={form.kitchen} onChange={handleChange} className="input">
+                                        <option value="Kapalı">Kapalı</option>
+                                        <option value="Açık">Açık</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="label">Tapu Durumu</label>
+                                    <input type="text" name="tapu_status" value={form.tapu_status} onChange={handleChange} className="input" placeholder="Örn: Hisseli, Müstakil" />
+                                </div>
+                                <div>
+                                    <label className="label">Otopark Durumu</label>
+                                    <select name="parking" value={form.parking} onChange={handleChange} className="input">
+                                        <option value="Yok">Yok</option>
+                                        <option value="Açık">Açık</option>
+                                        <option value="Kapalı">Kapalı</option>
+                                        <option value="Açık & Kapalı">Açık & Kapalı</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="label">Cephe</label>
+                                    <select name="facade" value={form.facade} onChange={handleChange} className="input">
+                                        <option value="">Seçiniz</option>
+                                        <option value="Kuzey">Kuzey</option>
+                                        <option value="Güney">Güney</option>
+                                        <option value="Doğu">Doğu</option>
+                                        <option value="Batı">Batı</option>
+                                        <option value="Kuzey-Doğu">Kuzey-Doğu</option>
+                                        <option value="Kuzey-Batı">Kuzey-Batı</option>
+                                        <option value="Güney-Doğu">Güney-Doğu</option>
+                                        <option value="Güney-Batı">Güney-Batı</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="label">Depozito</label>
+                                    <input type="number" name="deposit" value={form.deposit} onChange={handleChange} className="input" />
                                 </div>
                             </div>
                         </div>
@@ -536,10 +589,7 @@ const Dashboard = () => {
                                     <input type="checkbox" name="elevator" checked={form.elevator} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
                                     <span>Asansör</span>
                                 </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="parking" checked={form.parking} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
-                                    <span>Otopark</span>
-                                </label>
+
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" name="furnished" checked={form.furnished} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
                                     <span>Eşyalı</span>

@@ -10,7 +10,7 @@ const Footer = () => {
                     {/* Brand Column */}
                     <div className="space-y-6">
                         <Link to="/" className="flex items-center gap-3">
-                            <img src="/logo.png" alt="Topcu Logo" className="h-12 w-auto object-contain brightness-0 invert" />
+                            <img src="/logo.png" alt="Topcu Logo" className="h-16 w-auto object-contain" />
                             <span className="text-xl font-bold text-white tracking-tight">
                                 Topcu İnşaat & Gayrimenkul
                             </span>
@@ -52,16 +52,16 @@ const Footer = () => {
                         <h3 className="text-white font-bold text-lg mb-6">Portföy</h3>
                         <ul className="space-y-4">
                             <li>
-                                <Link to="/ilanlar" className="hover:text-secondary transition-colors inline-block">Satılık Daireler</Link>
+                                <Link to="/ilanlar?type=Daire&status=Satılık" className="hover:text-secondary transition-colors inline-block">Satılık Daireler</Link>
                             </li>
                             <li>
-                                <Link to="/ilanlar" className="hover:text-secondary transition-colors inline-block">Kiralık Konutlar</Link>
+                                <Link to="/ilanlar?status=Kiralık" className="hover:text-secondary transition-colors inline-block">Kiralık Konutlar</Link>
                             </li>
                             <li>
-                                <Link to="/ilanlar" className="hover:text-secondary transition-colors inline-block">Lüks Villalar</Link>
+                                <Link to="/ilanlar?type=Villa" className="hover:text-secondary transition-colors inline-block">Lüks Villalar</Link>
                             </li>
                             <li>
-                                <Link to="/ilanlar" className="hover:text-secondary transition-colors inline-block">Ticari Gayrimenkul</Link>
+                                <Link to="/ilanlar?type=İşyeri" className="hover:text-secondary transition-colors inline-block">Ticari Gayrimenkul</Link>
                             </li>
                         </ul>
                     </div>

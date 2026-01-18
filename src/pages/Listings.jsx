@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import ListingCard from '../components/ListingCard';
 import { useListings } from '../context/ListingContext';
 import { Search } from 'lucide-react';
@@ -7,7 +7,11 @@ import { Search } from 'lucide-react';
 const Listings = () => {
     const { listings } = useListings();
     const location = useLocation();
+    const [searchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState('');
+
+    const typeFilter = searchParams.get('type');
+    const statusFilter = searchParams.get('status');
 
     useEffect(() => {
         if (location.state?.location) {
@@ -15,11 +19,17 @@ const Listings = () => {
         }
     }, [location.state]);
 
-    const filteredListings = listings.filter(listing =>
-        listing.title.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
-        listing.location.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
-        (listing.listing_no && listing.listing_no.toString().includes(searchTerm))
-    );
+    const filteredListings = listings.filter(listing => {
+        const matchesSearch =
+            listing.title.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
+            listing.location.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
+            (listing.listing_no && listing.listing_no.toString().includes(searchTerm));
+
+        const matchesType = typeFilter ? listing.type === typeFilter : true;
+        const matchesStatus = statusFilter ? listing.status === statusFilter : true;
+
+        return matchesSearch && matchesType && matchesStatus;
+    });
 
     return (
         <div className="pt-32 pb-20 bg-primary min-h-screen">
