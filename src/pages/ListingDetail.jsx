@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useListings } from '../context/ListingContext';
-import { MapPin, Ruler, Bed, Bath, Home, ArrowLeft, Phone, CheckCircle2, ChevronLeft, ChevronRight, Share2 } from 'lucide-react';
+import { MapPin, Ruler, Bed, Square, Home, Utensils, ArrowLeft, Phone, CheckCircle2, ChevronLeft, ChevronRight, Share2, X, Compass } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CONSULTANTS } from '../constants/consultants';
 
@@ -10,10 +10,18 @@ const ListingDetail = () => {
     const { listings, loading } = useListings();
     const [activeTab, setActiveTab] = useState('details');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
     // Find listing
     const listing = listings.find(l => l.id.toString() === id);
     const assignedConsultant = CONSULTANTS.find(c => c.id === listing?.consultant_id) || CONSULTANTS[0];
+
+    const currencySymbol = {
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'TL': '₺'
+    }[listing?.currency] || '₺';
 
     // Image Logic
     const allImages = listing?.images && listing.images.length > 0
@@ -106,64 +114,61 @@ const ListingDetail = () => {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0 }}
                                 transition={{ duration: 0.2 }}
-                                className="w-full h-full object-cover"
+                                className="w-full h-full object-cover cursor-pointer"
+                                onClick={() => setIsLightboxOpen(true)}
                             />
                         </AnimatePresence>
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
+                        {/* Watermark */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 opacity-30 md:opacity-40 select-none overflow-hidden">
+                            <div className="text-white text-4xl md:text-8xl font-bold -rotate-12 whitespace-nowrap drop-shadow-lg opacity-50">
+                                TOPCU
+                            </div>
+                        </div>
+
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90 pointer-events-none" />
 
                         {/* Navigation Arrows */}
                         {allImages.length > 1 && (
                             <>
                                 <button
                                     onClick={(e) => { e.preventDefault(); prevImage(); }}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10 z-20"
                                 >
                                     <ChevronLeft size={32} />
                                 </button>
                                 <button
                                     onClick={(e) => { e.preventDefault(); nextImage(); }}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10 z-20"
                                 >
                                     <ChevronRight size={32} />
                                 </button>
-
-                                {/* Indicators */}
-                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-                                    {allImages.map((_, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => setCurrentImageIndex(idx)}
-                                            className={`w-2.5 h-2.5 rounded-full transition-all shadow-sm ${currentImageIndex === idx ? 'bg-secondary w-8' : 'bg-white/60 hover:bg-white'}`}
-                                        />
-                                    ))}
-                                </div>
                             </>
                         )}
 
                         {/* Title & Price Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12 text-white z-10">
-                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        {/* Title & Price Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-12 text-white z-10 pointer-events-none">
+                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-6">
                                 <div>
-                                    <div className="flex gap-3 mb-3">
-                                        <span className="bg-secondary text-black text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                    <div className="flex gap-2, mb-2 md:mb-3">
+                                        <span className="bg-secondary text-black text-[10px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full uppercase tracking-wider">
                                             {listing.type}
                                         </span>
-                                        <span className="bg-primary/90 text-white border border-white/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                                        <span className="bg-primary/90 text-white border border-white/20 text-[10px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full uppercase tracking-wider">
                                             {listing.status}
                                         </span>
                                     </div>
-                                    <h1 className="text-3xl md:text-5xl font-bold mb-2 leading-tight shadow-md">{listing.title}</h1>
-                                    <div className="flex items-center gap-2 text-slate-200 text-lg">
-                                        <MapPin size={20} className="text-secondary" />
+                                    <h1 className="text-xl md:text-5xl font-bold mb-1 md:mb-2 leading-tight shadow-md line-clamp-2 md:line-clamp-none">{listing.title}</h1>
+                                    <div className="flex items-center gap-1 md:gap-2 text-slate-200 text-sm md:text-lg">
+                                        <MapPin size={16} className="text-secondary md:w-5 md:h-5" />
                                         {listing.location}
                                     </div>
                                 </div>
                                 <div className="text-left md:text-right">
-                                    <div className="text-3xl md:text-5xl font-bold text-secondary drop-shadow-lg">
-                                        {Number(listing.price || 0).toLocaleString('tr-TR')} ₺
+                                    <div className="text-2xl md:text-5xl font-bold text-secondary drop-shadow-lg">
+                                        {Number(listing.price || 0).toLocaleString('tr-TR')} {currencySymbol}
                                     </div>
-                                    <p className="text-slate-300 text-sm mt-1">Başlangıç Fiyatı</p>
                                 </div>
                             </div>
                         </div>
@@ -205,10 +210,10 @@ const ListingDetail = () => {
                                 >
                                     {/* Quick Stats */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                        <StatBox icon={Ruler} label="Alan" value={`${listing.sqm} m²`} />
+                                        <StatBox icon={Ruler} label="Brüt" value={`${listing.sqm || listing.gross_sqm || '-'} m²`} />
                                         <StatBox icon={Bed} label="Oda" value={listing.beds} />
-                                        <StatBox icon={Bath} label="Banyo" value={listing.baths} />
-                                        <StatBox icon={Home} label="Kat" value={listing.floor_location || '-'} />
+                                        <StatBox icon={Utensils} label="Mutfak" value={listing.kitchen || '-'} />
+                                        <StatBox icon={Compass} label="Cephe" value={listing.facade || '-'} />
                                     </div>
 
                                     {/* Details List */}
@@ -226,7 +231,12 @@ const ListingDetail = () => {
                                                 <DetailRow label="Isıtma" value={listing.heating || '-'} />
                                                 <DetailRow label="Kullanım" value={listing.usage_status || 'Boş'} />
                                                 <DetailRow label="Aidat" value={listing.dues ? `${listing.dues} TL` : '-'} />
+                                                <DetailRow label="Depozito" value={listing.deposit ? `${Number(listing.deposit).toLocaleString('tr-TR')} ${currencySymbol}` : '-'} />
                                                 <DetailRow label="Kredi" value={listing.loan_eligible ? 'Uygun' : 'Uygun Değil'} />
+                                                <DetailRow label="Tapu Durumu" value={listing.tapu_status || '-'} />
+                                                <DetailRow label="Cephe" value={listing.facade || '-'} />
+                                                <DetailRow label="Otopark" value={listing.parking && listing.parking !== 'true' && listing.parking !== true ? listing.parking : 'Yok'} />
+                                                <DetailRow label="Mutfak" value={`${listing.kitchen || 'Kapalı'} Mutfak`} />
                                                 <DetailRow label="Takas" value={listing.swap ? 'Olabilir' : 'Yok'} />
                                             </div>
                                         </div>
@@ -240,7 +250,10 @@ const ListingDetail = () => {
                                         </h3>
                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                                             <FeatureItem label="Balkon" active={listing.balcony} />
-                                            <FeatureItem label="Otopark" active={listing.parking} />
+                                            <div className={`flex items-center gap-3 p-3 rounded-lg border ${listing.parking && listing.parking !== 'Yok' && listing.parking !== 'true' && listing.parking !== true ? 'bg-secondary/5 border-secondary/20 text-primary' : 'bg-transparent border-transparent text-slate-400 grayscale opacity-60'}`}>
+                                                <CheckCircle2 size={18} className={listing.parking && listing.parking !== 'Yok' && listing.parking !== 'true' && listing.parking !== true ? 'text-secondary' : 'text-slate-300'} />
+                                                <span className="font-semibold text-sm">Otopark: {listing.parking && listing.parking !== 'true' && listing.parking !== true ? listing.parking : 'Yok'}</span>
+                                            </div>
                                             <FeatureItem label="Asansör" active={listing.elevator} />
                                             <FeatureItem label="Eşyalı" active={listing.furnished} />
                                             <FeatureItem label="Site İçinde" active={listing.in_complex} />
@@ -328,15 +341,65 @@ const ListingDetail = () => {
                     </div>
                 </div>
             </div>
-        </div>
+            {/* Lightbox Modal */}
+            <AnimatePresence>
+                {isLightboxOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center"
+                    >
+                        <button
+                            onClick={() => setIsLightboxOpen(false)}
+                            className="absolute top-6 right-6 text-white/80 hover:text-white z-[70] p-2 hover:bg-white/10 rounded-full transition-colors"
+                        >
+                            <X size={32} />
+                        </button>
+
+                        <button
+                            onClick={(e) => { e.preventDefault(); prevImage(); }}
+                            className="absolute left-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-[70] p-4 hover:bg-white/10 rounded-full transition-colors"
+                        >
+                            <ChevronLeft size={48} />
+                        </button>
+
+                        <button
+                            onClick={(e) => { e.preventDefault(); nextImage(); }}
+                            className="absolute right-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-[70] p-4 hover:bg-white/10 rounded-full transition-colors"
+                        >
+                            <ChevronRight size={48} />
+                        </button>
+
+                        <div className="relative w-full h-full p-4 md:p-12 flex items-center justify-center">
+                            <motion.img
+                                key={`lightbox-${currentImageIndex}`}
+                                src={allImages[currentImageIndex]}
+                                alt={listing.title}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.2 }}
+                                className="max-w-full max-h-full object-contain pointer-events-none select-none"
+                            />
+                            {/* Watermark in Lightbox */}
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[65] opacity-30 md:opacity-30 select-none overflow-hidden">
+                                <div className="text-white text-4xl md:text-9xl font-bold -rotate-12 whitespace-nowrap drop-shadow-2xl opacity-50">
+                                    TOPCU
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div >
     );
 };
 
 const StatBox = ({ icon: Icon, label, value }) => (
     <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-xl border border-slate-200/60 hover:border-secondary/50 transition-colors group">
         <Icon size={28} className="text-slate-400 mb-2 group-hover:text-secondary transition-colors" />
-        <span className="font-bold text-primary text-lg">{value}</span>
-        <span className="text-xs uppercase tracking-wide text-slate-500">{label}</span>
+        <span className="font-bold text-primary text-sm md:text-base text-center leading-tight">{value}</span>
+        <span className="font-bold text-slate-500 text-sm md:text-base text-center mt-1">{label}</span>
     </div>
 );
 
