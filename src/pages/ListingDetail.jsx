@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useListings } from '../context/ListingContext';
-import { MapPin, Ruler, Square, Home, ArrowLeft, Phone, CheckCircle2, ChevronLeft, ChevronRight, Share2, X, Utensils, Compass } from 'lucide-react';
+import { MapPin, Ruler, Bed, Square, Home, Utensils, ArrowLeft, Phone, CheckCircle2, ChevronLeft, ChevronRight, Share2, X, Compass } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CONSULTANTS } from '../constants/consultants';
 
@@ -122,7 +122,7 @@ const ListingDetail = () => {
                         {/* Watermark */}
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 opacity-30 md:opacity-40 select-none overflow-hidden">
                             <div className="text-white text-4xl md:text-8xl font-bold -rotate-12 whitespace-nowrap drop-shadow-lg opacity-50">
-                                Topcu İnşaat & Gayrimenkul
+                                TOPCU
                             </div>
                         </div>
 
@@ -210,9 +210,9 @@ const ListingDetail = () => {
                                 >
                                     {/* Quick Stats */}
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                        <StatBox icon={Square} label="Brüt m²" value={listing.gross_sqm} />
-                                        <StatBox icon={Home} label="Kat" value={listing.floor_location || '-'} />
-                                        <StatBox icon={Utensils} label="Mutfak Tipi" value={`${listing.kitchen || 'Kapalı'} Mutfak`} />
+                                        <StatBox icon={Ruler} label="Brüt" value={`${listing.sqm || listing.gross_sqm || '-'} m²`} />
+                                        <StatBox icon={Bed} label="Oda" value={listing.beds} />
+                                        <StatBox icon={Utensils} label="Mutfak" value={listing.kitchen || '-'} />
                                         <StatBox icon={Compass} label="Cephe" value={listing.facade || '-'} />
                                     </div>
 
@@ -384,7 +384,7 @@ const ListingDetail = () => {
                             {/* Watermark in Lightbox */}
                             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[65] opacity-30 md:opacity-30 select-none overflow-hidden">
                                 <div className="text-white text-4xl md:text-9xl font-bold -rotate-12 whitespace-nowrap drop-shadow-2xl opacity-50">
-                                    Topcu İnşaat & Gayrimenkul
+                                    TOPCU
                                 </div>
                             </div>
                         </div>

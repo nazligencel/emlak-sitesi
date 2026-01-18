@@ -1,4 +1,4 @@
-import { MapPin, Bed, Bath, Square, Utensils } from 'lucide-react';
+import { MapPin, Bed, Square, Home, Compass, Utensils } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
@@ -39,12 +39,7 @@ const ListingCard = ({ listing, index }) => {
                 {/* Content */}
                 <div className="p-5">
                     <div className="text-secondary font-bold text-xl mb-1">
-                        {listing.price ? Number(listing.price).toLocaleString('tr-TR') : 0} {{
-                            'USD': '$',
-                            'EUR': '€',
-                            'GBP': '£',
-                            'TL': '₺'
-                        }[listing.currency] || '₺'}
+                        {listing.price ? Number(listing.price).toLocaleString('tr-TR') : 0} ₺
                     </div>
                     <h3 className="text-slate-800 font-bold text-lg mb-2 line-clamp-1 group-hover:text-secondary transition-colors">
                         {listing.title}
@@ -55,22 +50,22 @@ const ListingCard = ({ listing, index }) => {
                         <span className="line-clamp-1">{listing.location}</span>
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-slate-600 text-sm">
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-slate-600 text-sm gap-2">
                         <div className="flex items-center gap-1">
-                            <Bed size={18} className="text-slate-400" />
+                            <Bed size={16} className="text-slate-400" />
                             <span>{listing.beds}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <Bath size={18} className="text-slate-400" />
-                            <span>{listing.baths} Banyo</span>
+                            <Utensils size={16} className="text-slate-400" />
+                            <span>{listing.kitchen}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <Utensils size={18} className="text-slate-400" />
-                            <span>{listing.kitchen || 'Kapalı'} Mutfak</span>
+                            <Square size={16} className="text-slate-400" />
+                            <span>{listing.sqm || listing.gross_sqm || '-'} m²</span>
                         </div>
                         <div className="flex items-center gap-1">
-                            <Square size={18} className="text-slate-400" />
-                            <span>{listing.sqm} m²</span>
+                            <Compass size={16} className="text-slate-400" />
+                            <span>{listing.facade}</span>
                         </div>
                     </div>
                 </div>
