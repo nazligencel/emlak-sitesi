@@ -52,16 +52,38 @@ const ListingDetail = () => {
                     </Link>
                     <div className="flex gap-3">
                         <button
-                            onClick={() => {
-                                if (navigator.share) {
-                                    navigator.share({
-                                        title: listing.title,
-                                        text: `${listing.title} - ${listing.price} TL`,
-                                        url: window.location.href,
-                                    }).catch(console.error);
-                                } else {
-                                    navigator.clipboard.writeText(window.location.href);
-                                    alert('Link kopyalandı!');
+                            onClick={async () => {
+                                const shareData = {
+                                    title: listing.title,
+                                    text: `${listing.title} - ${listing.price} TL #TopcuInsaat`,
+                                    url: window.location.href,
+                                };
+                                try {
+                                    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+                                        await navigator.share(shareData);
+                                    } else {
+                                        throw new Error('Web Share API not supported');
+                                    }
+                                } catch (err) {
+                                    console.log('Share failed, falling back to clipboard', err);
+                                    try {
+                                        await navigator.clipboard.writeText(window.location.href);
+                                        alert('İlan bağlantısı kopyalandı!');
+                                    } catch (clipboardErr) {
+                                        console.error('Clipboard failed', clipboardErr);
+                                        // Legacy Fallback
+                                        const textArea = document.createElement("textarea");
+                                        textArea.value = window.location.href;
+                                        document.body.appendChild(textArea);
+                                        textArea.select();
+                                        try {
+                                            document.execCommand('copy');
+                                            alert(' Bağlantı kopyalandı! (Manual)');
+                                        } catch (e) {
+                                            alert('Bağlantı kopyalanamadı. Lütfen adresi manuel olarak alın.');
+                                        }
+                                        document.body.removeChild(textArea);
+                                    }
                                 }
                             }}
                             className="p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors"

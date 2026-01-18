@@ -22,7 +22,7 @@ const Contact = () => {
                     </p>
                 </div>
 
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     {/* Contact Info */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -94,17 +94,17 @@ const Contact = () => {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="max-w-4xl mx-auto mt-12 rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50"
+                    className="max-w-7xl mx-auto mt-12 rounded-2xl overflow-hidden shadow-2xl border border-slate-700/50"
                 >
                     <iframe
                         width="100%"
-                        height="450"
+                        height="500"
                         frameBorder="0"
                         scrolling="no"
                         marginHeight="0"
                         marginWidth="0"
                         src="https://maps.google.com/maps?q=%C3%87aml%C4%B1bel%20Mahallesi%20Ahmet%20Vefik%20Pa%C5%9Fa%20Caddesi%20No:29%20Kepez/Antalya&t=&z=15&ie=UTF8&iwloc=&output=embed"
-                        className="w-full h-full grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
+                        className="w-full grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
                     >
                     </iframe>
                 </motion.div>

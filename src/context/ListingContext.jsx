@@ -51,7 +51,7 @@ export const ListingProvider = ({ children }) => {
                 furnished: Boolean(newListing.furnished),
                 in_complex: Boolean(newListing.in_complex),
                 loan_eligible: Boolean(newListing.loan_eligible),
-                loan_eligible: Boolean(newListing.loan_eligible),
+
                 swap: Boolean(newListing.swap),
                 consultant_id: safeNumber(newListing.consultant_id),
             };
