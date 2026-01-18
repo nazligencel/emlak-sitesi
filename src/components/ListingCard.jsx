@@ -24,6 +24,11 @@ const ListingCard = ({ listing, index }) => {
                     <div className="absolute top-4 left-4 bg-secondary text-white px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
                         {listing.type}
                     </div>
+                    {listing.is_opportunity && (
+                        <div className="absolute top-14 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-pulse z-10">
+                            FIRSAT
+                        </div>
+                    )}
                     <div className="absolute top-4 right-4 bg-primary/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold">
                         {listing.status}
                     </div>

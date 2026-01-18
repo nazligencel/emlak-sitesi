@@ -68,7 +68,8 @@ const Dashboard = () => {
         listing_no: '',
         image: '',
         images: [],
-        consultant_id: 1
+        consultant_id: 1,
+        is_opportunity: false
     };
 
     const [form, setForm] = useState(initialFormState);
@@ -426,7 +427,7 @@ const Dashboard = () => {
                                         onChange={handleChange}
                                         className="input"
                                     >
-                                        {CONSULTANTS.map(c => (
+                                        {CONSULTANTS.filter(c => c.name !== "Mesut TOPCU").map(c => (
                                             <option key={c.id} value={c.id}>{c.name} ({c.role})</option>
                                         ))}
                                     </select>
@@ -554,6 +555,10 @@ const Dashboard = () => {
                                 <label className="flex items-center gap-2 cursor-pointer">
                                     <input type="checkbox" name="swap" checked={form.swap} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
                                     <span>Takas</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer bg-yellow-50 p-2 rounded-lg border border-yellow-200">
+                                    <input type="checkbox" name="is_opportunity" checked={form.is_opportunity} onChange={handleChange} className="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500" />
+                                    <span className="font-bold text-yellow-700">Fırsat İlanı</span>
                                 </label>
                             </div>
                         </div>

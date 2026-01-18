@@ -1,49 +1,60 @@
-# Hostinger ile Canlıya Alma Rehberi
+# 🚀 Emlak Sitesi - Canlıya Alma (Yayınlama) Rehberi
 
-Emlak sitenizi Hostinger üzerinde yayına almak için aşağıdaki adımları takip edin. Projeniz modern bir React uygulamasıdır ve "Statik Site" olarak sunulacaktır.
+Bu rehber, **Topcu İnşaat & Gayrimenkul** web sitesini Hostinger veya benzeri bir hosting sağlayıcısında yayına almak için hazırlanmıştır. Projeniz **statik** bir web sitesi olarak hazırdır ve ek bir sunucu kurulumu gerektirmez.
 
-## 1. Hazırlık: Dosyaların Oluşturulması
-Biz bu adımı sizin için yaptık ama tekrar etmek isterseniz:
-1. Terminalde şu komutu çalıştırarak üretim (production) dosyalarını oluşturun:
-   ```bash
-   npm run build
-   ```
-2. Bu işlem projenizin ana dizininde `dist` adında yeni bir klasör oluşturur.
-   - Bu klasörün içinde `index.html`, `assets` klasörü ve diğer dosyalar bulunur.
-   - **Canlıya yükleyeceğiniz dosyalar SADECE bu `dist` klasörünün içindekilerdir.**
+---
 
-> **Önemli Not:** Sizin için `.htaccess` dosyasını da hazırladık ve build içine dahil ettik. Bu dosya, sayfa yenilendiğinde "404 Sayfa Bulunamadı" hatası almanızı engeller.
+## 📂 1. Hazır Dosyalar (dist Klasörü)
 
-## 2. Hostinger Paneline Giriş ve Dosya Yükleme
+Biz sizin için tüm kodları derledik ve yayına hazır hale getirdik.
+Projenizin ana dizinindeki **`dist`** klasörü, canlı sitenizin ta kendisidir.
 
-1. **Hostinger Paneline Giriş Yapın:**
-   - Hostinger hesabınıza girin ve "Web Siteleri" bölümünden sitenizin yanındaki **"Yönet"** butonuna tıklayın.
+**`dist` Klasörünün İçeriği Şunları Kapsar:**
+*   **`index.html`**: Sitenin giriş kapısı (SEO ve Sosyal Medya etiketleri ile güncellendi).
+*   **`assets/`**: Sitenin stil (CSS) ve kod (JS) dosyaları.
+*   **`.htaccess`**: Sayfa yenilemelerinde hata almamak için gerekli sunucu ayar dosyası.
+*   **`logo.png`, `logo.jpg`**: Favicon ve sosyal medya paylaşım görselleri.
+*   **`consultants/`**: Danışman resimleri.
 
-2. **Dosya Yöneticisini Açın:**
-   - Sol menüden veya Dashboard üzerinden **"Dosya Yöneticisi" (File Manager)** seçeneğini bulun ve tıklayın (`public_html` klasörüne erişim sağlar).
+---
 
-3. **`public_html` Klasörünü Temizleyin:**
-   - Dosya yöneticisinde `public_html` klasörüne çift tıklayın.
-   - İçinde varsayılan olarak gelen `default.php` veya başka dosyalar varsa hepsini seçip **SİLİN**. Klasör tamamen boş olmalıdır.
+## 🌍 2. Hostinger'a Yükleme Adımları
 
-4. **Dosyaları Yükleyin:**
-   - Bilgisayarınızdaki proje klasörüne gidin: `d:\Java\workspace\emlak-sitesi\dist`
-   - `dist` klasörünün **İÇİNDEKİ** (klasörün kendisi değil, içindekiler) tüm dosyaları seçin (`index.html`, `.htaccess`, `assets`, `logo.png` vb.).
-   - Bu dosyaları sürükleyip Hostinger Dosya Yöneticisi penceresine (public_html içine) bırakın.
-   - Yükleme tamamlandığında `index.html` dosyası direkt olarak `public_html` klasörünün içinde görünmelidir. (Örn: `public_html/index.html`).
+Sitenizi yayına almak için şu adımları izleyin:
 
-## 3. Yayını Kontrol Etme
+1.  **Hostinger Paneline Girin:**
+    *   Hesabınıza giriş yapın ve sitenizin yönetim panelinden **"Dosya Yöneticisi" (File Manager)** bölümünü açın.
 
-1. Tarayıcınızdan domain adresinize gidin (örn: `www.siteniz.com`).
-2. Sitenizin açıldığını görmelisiniz.
-3. **Test Edin:** Menülerde gezinin, bir ilanın detayına gidin ve sayfayı yenileyin (F5). Eğer sayfa yenilendiğinde hata almıyorsanız `.htaccess` dosyası doğru çalışıyor demektir.
+2.  **`public_html` Klasörünü Açın:**
+    *   Dosya yöneticisinde **`public_html`** klasörüne çift tıklayın.
+    *   İçerisinde `default.php` veya başka dosyalar varsa hepsini **silin**. Klasör tamamen boş olsun.
 
-## Sık Karşılaşılan Sorunlar
+3.  **Dosyaları Yükleyin:**
+    *   Bilgisayarınızdaki proje klasöründe **`dist`** klasörünün **İÇİNE** girin.
+    *   Buradaki **TÜM dosyaları ve klasörleri** seçin (`assets`, `index.html`, `.htaccess`, resimler vb.).
+    *   Bu dosyaları sürükleyip Hostinger tarayıcı penceresindeki boş `public_html` alanına bırakın.
 
-- **Sayfalar arası geçişte hata yok ama yenileyince 404 hatası alıyorum:**
-  - `.htaccess` dosyası yüklenmemiş olabilir. Bilgisayarınızdaki `dist` klasöründe `.htaccess` dosyasını (bazen gizli olabilir) Hostinger'a yüklediğinizden emin olun.
+⚠️ **DİKKAT:** `dist` klasörünün kendisini değil, **içindeki dosyaları** yüklemelisiniz. Yükleme bittiğinde `public_html/index.html` şeklinde görünmelidir.
 
-- **Site "Index of /" sayfası gösteriyor:**
-  - `index.html` dosyasını doğrudan `public_html` içine değil, yanlışlıkla bir alt klasöre (örneğin `public_html/dist/`) atmış olabilirsiniz. Dosyaları bir üst dizine taşıyın.
+---
 
-Tebrikler! Siteniz artık yayında. 🚀
+## ✅ 3. Kontrol Listesi (Checklist)
+
+Yayına aldıktan sonra şunları kontrol edin:
+
+*   [ ] **Site Açılıyor mu?**: `www.siteniz.com` adresine girdiğinizde site yükleniyor mu?
+*   [ ] **Sekme Başlığı ve İkon**: Tarayıcı sekmesinde "Topcu İnşaat & Gayrimenkul" yazıyor ve logonuz görünüyor mu?
+*   [ ] **Sayfa Yenileme**: Herhangi bir ilanın detayına girin (örn: `/ilan/500`) ve sayfayı yenileyin (F5). Hata almadan sayfa tekrar açılıyor mu? (Eğer 404 hatası alırsanız `.htaccess` dosyası yüklenmemiş demektir, tekrar yükleyin).
+*   [ ] **WhatsApp Paylaşımı**: Sitenin linkini WhatsApp'tan birine gönderin. Resimli ve açıklamaklı önizleme kartı çıkıyor mu? (Bazen ilk seferde çıkmazsa linkin sonuna `/?1` ekleyip deneyin).
+
+---
+
+## 🆘 Sık Sorulan Sorular
+
+**Soru: Sitede değişiklik yaptım, nasıl güncellerim?**
+Cevap: Her değişiklikten sonra terminalde `npm run build` komutunu çalıştırın. Oluşan yeni `dist` klasöründeki dosyaları sunucuya tekrar yükleyin (eski dosyaların üzerine yazın).
+
+**Soru: Resimler görünmüyor?**
+Cevap: Dosya isimlerinin büyük/küçük harf duyarlı olduğunu unutmayın. Bilgisayarda `Logo.png` ve `logo.png` aynı olabilir ama sunucuda farklıdır. Kodlarımızda tümü küçük harf uyumludur.
+
+Tebrikler, siteniz yayında! 🧿

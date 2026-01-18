@@ -53,6 +53,7 @@ export const ListingProvider = ({ children }) => {
                 loan_eligible: Boolean(newListing.loan_eligible),
 
                 swap: Boolean(newListing.swap),
+                is_opportunity: Boolean(newListing.is_opportunity),
                 consultant_id: safeNumber(newListing.consultant_id),
             };
 
