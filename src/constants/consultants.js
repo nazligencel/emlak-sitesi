@@ -7,6 +7,7 @@ export const CONSULTANTS = [
         phone: "0(533) 398 79 79",
         email: "mtopcu07@hotmail.com"
     },
+
     {
         id: 2,
         name: "Mehmet TOPCU",
