@@ -243,10 +243,10 @@ const Dashboard = () => {
         return (
             <div className="min-h-screen bg-slate-50 pt-24 pb-20">
                 <div className="container mx-auto px-6">
-                    <div className="flex justify-between items-center mb-8 gap-4">
-                        <h1 className="text-3xl font-bold text-primary whitespace-nowrap">İlan Yönetimi</h1>
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                        <h1 className="text-3xl font-bold text-primary whitespace-nowrap w-full md:w-auto text-center md:text-left">İlan Yönetimi</h1>
 
-                        <div className="flex-1 max-w-md relative">
+                        <div className="flex-1 w-full md:w-auto max-w-md relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                             <input
                                 type="text"
@@ -257,7 +257,7 @@ const Dashboard = () => {
                             />
                         </div>
 
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 w-full md:w-auto justify-center md:justify-end">
                             <button
                                 onClick={() => {
                                     setEditingId(null);
@@ -267,11 +267,11 @@ const Dashboard = () => {
                                     setLocDistrict('');
                                     setView('form');
                                 }}
-                                className="bg-secondary text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-secondary/90 transition-colors"
+                                className="bg-secondary text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-secondary/90 transition-colors whitespace-nowrap"
                             >
                                 <Plus size={20} /> Yeni İlan
                             </button>
-                            <button onClick={handleLogout} className="text-red-600 font-medium hover:text-red-700">
+                            <button onClick={handleLogout} className="text-red-600 font-medium hover:text-red-700 whitespace-nowrap">
                                 Çıkış Yap
                             </button>
                         </div>
@@ -282,27 +282,27 @@ const Dashboard = () => {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
-                                        <th className="p-4">Resim</th>
-                                        <th className="p-4">İlan No</th>
-                                        <th className="p-4">Başlık</th>
-                                        <th className="p-4">Konum</th>
-                                        <th className="p-4">Fiyat</th>
-                                        <th className="p-4 text-right">İşlemler</th>
+                                        <th className="p-4 whitespace-nowrap">Resim</th>
+                                        <th className="p-4 whitespace-nowrap">İlan No</th>
+                                        <th className="p-4 whitespace-nowrap">Başlık</th>
+                                        <th className="p-4 whitespace-nowrap">Konum</th>
+                                        <th className="p-4 whitespace-nowrap">Fiyat</th>
+                                        <th className="p-4 whitespace-nowrap text-right">İşlemler</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredListings.map(listing => (
                                         <tr key={listing.id} className="border-b border-slate-100 hover:bg-slate-50">
-                                            <td className="p-4">
+                                            <td className="p-4 whitespace-nowrap">
                                                 <img src={listing.image} alt="" className="w-16 h-12 object-cover rounded" />
                                             </td>
-                                            <td className="p-4 font-mono text-sm text-slate-500">#{listing.listing_no || listing.id}</td>
-                                            <td className="p-4 font-medium text-primary">{listing.title}</td>
-                                            <td className="p-4 text-slate-500">{listing.location}</td>
-                                            <td className="p-4 font-bold text-secondary">
+                                            <td className="p-4 font-mono text-sm text-slate-500 whitespace-nowrap">#{listing.listing_no || listing.id}</td>
+                                            <td className="p-4 font-medium text-primary whitespace-nowrap">{listing.title}</td>
+                                            <td className="p-4 text-slate-500 whitespace-nowrap">{listing.location}</td>
+                                            <td className="p-4 font-bold text-secondary whitespace-nowrap">
                                                 {Number(listing.price).toLocaleString('tr-TR')} TL
                                             </td>
-                                            <td className="p-4 text-right">
+                                            <td className="p-4 text-right whitespace-nowrap">
                                                 <button
                                                     onClick={() => handleEdit(listing)}
                                                     className="text-blue-600 hover:text-blue-800 p-2 mr-2"

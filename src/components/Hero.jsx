@@ -56,7 +56,7 @@ const Hero = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.4 }}
-                    className="bg-white/10 backdrop-blur-md p-4 rounded-full border border-white/20 shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4 relative z-30"
+                    className="bg-white/10 backdrop-blur-md p-4 rounded-2xl md:rounded-full border border-white/20 shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4 relative z-30"
                 >
                     {/* City Selector */}
                     <div className="relative min-w-[160px]">
