@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useListings } from '../../context/ListingContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Trash2, Edit, Plus, X, Search } from 'lucide-react';
+import { Trash2, Edit, Plus, X, Search, Move } from 'lucide-react';
 import { CONSULTANTS } from '../../constants/consultants';
 import { LOCATIONS } from '../../constants/locations';
 
@@ -13,19 +13,27 @@ const Dashboard = () => {
 
     const [view, setView] = useState('list');
     const [editingId, setEditingId] = useState(null);
-    const [newImages, setNewImages] = useState([]); // { file, preview, id }
+    // const [newImages, setNewImages] = useState([]); // Removed in favor of displayImages
+    const [displayImages, setDisplayImages] = useState([]); // { id, url, file, type: 'existing'|'new' }
     const [uploading, setUploading] = useState(false);
+
+    // Drag & Drop refs
+    const dragItem = useRef(null);
+    const dragOverItem = useRef(null);
 
     const [searchTerm, setSearchTerm] = useState('');
     const [filterConsultant, setFilterConsultant] = useState('');
     const [locCity, setLocCity] = useState('');
     const [locDistrict, setLocDistrict] = useState('');
+    const [locNeighborhood, setLocNeighborhood] = useState('');
 
     useEffect(() => {
         if (locCity && locDistrict) {
-            setForm(prev => ({ ...prev, location: `${locDistrict}, ${locCity}` }));
+            // Construct location string: "Neighborhood, District, City" or "District, City"
+            const parts = [locNeighborhood, locDistrict, locCity].filter(Boolean);
+            setForm(prev => ({ ...prev, location: parts.join(', ') }));
         }
-    }, [locCity, locDistrict]);
+    }, [locCity, locDistrict, locNeighborhood]);
 
     // ... (rest of state)
 
@@ -115,9 +123,13 @@ const Dashboard = () => {
     // Cleanup previews
     useEffect(() => {
         return () => {
-            newImages.forEach(img => URL.revokeObjectURL(img.preview));
+            displayImages.forEach(img => {
+                if (img.type === 'new') {
+                    URL.revokeObjectURL(img.url);
+                }
+            });
         };
-    }, [newImages]);
+    }, [displayImages]);
 
     const handleLogout = () => {
         logout();
@@ -130,43 +142,58 @@ const Dashboard = () => {
         setForm({
             ...initialFormState,
             ...listing,
+            price: listing.price ? Number(listing.price).toLocaleString('tr-TR') : '',
             images: listingImages,
         });
 
-        // Parse Location
-        let foundCity = 'Antalya';
-        let foundDistrict = '';
+        // Initialize existing images for display/reorder
+        const initialDisplayImages = listingImages.map((url, idx) => ({
+            id: `existing-${idx}-${Date.now()}`,
+            url: url,
+            type: 'existing'
+        }));
+        setDisplayImages(initialDisplayImages);
 
+        // Parse Location: "Mahalle, İlçe, İl" or "İlçe, İl"
         const loc = listing.location || '';
         const parts = loc.split(',').map(s => s.trim());
 
-        if (parts.length > 1) {
-            // Check formatted "District, City" or "City, District"
-            if (Object.keys(LOCATIONS).includes(parts[1])) {
-                foundCity = parts[1];
-                foundDistrict = parts[0];
-            } else if (Object.keys(LOCATIONS).includes(parts[0])) {
-                foundCity = parts[0];
-                foundDistrict = parts[1];
-            }
-        } else {
-            // Try to find if the string matches a district or city
-            if (Object.keys(LOCATIONS).includes(loc)) {
-                foundCity = loc;
-            } else {
-                for (const [c, districts] of Object.entries(LOCATIONS)) {
-                    if (districts.includes(loc)) {
-                        foundCity = c;
-                        foundDistrict = loc;
-                        break;
+        let foundCity = '';
+        let foundDistrict = '';
+        let foundNeighborhood = '';
+
+        // Try to find City from known locations (usually last part)
+        const possibleCity = parts[parts.length - 1];
+        if (LOCATIONS[possibleCity]) {
+            foundCity = possibleCity;
+
+            // Check district (second to last)
+            if (parts.length > 1) {
+                const possibleDistrict = parts[parts.length - 2];
+                // Check if district exists in city (keys of object)
+                if (LOCATIONS[foundCity][possibleDistrict] || (Array.isArray(LOCATIONS[foundCity]) && LOCATIONS[foundCity].includes(possibleDistrict))) {
+                    foundDistrict = possibleDistrict;
+
+                    // Remainder is neighborhood
+                    if (parts.length > 2) {
+                        foundNeighborhood = parts.slice(0, parts.length - 2).join(', ');
                     }
+                }
+            }
+        }
+        // Fallback search
+        if (!foundCity) {
+            for (const part of parts) {
+                if (LOCATIONS[part]) {
+                    foundCity = part;
+                    break;
                 }
             }
         }
 
         setLocCity(foundCity);
         setLocDistrict(foundDistrict);
-        setNewImages([]);
+        setLocNeighborhood(foundNeighborhood);
         setView('form');
     };
 
@@ -179,33 +206,33 @@ const Dashboard = () => {
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files.length > 0) {
             const files = Array.from(e.target.files);
-            const newImageObjects = files.map(file => ({
-                file,
-                preview: URL.createObjectURL(file),
-                id: Math.random().toString(36).substr(2, 9)
+            const newItems = files.map(file => ({
+                id: `new-${Math.random().toString(36).substr(2, 9)}`,
+                url: URL.createObjectURL(file), // Use this for preview
+                file: file,
+                type: 'new'
             }));
 
-            setNewImages(prev => [...prev, ...newImageObjects]);
+            setDisplayImages(prev => [...prev, ...newItems]);
         }
-        // Reset input value to allow selecting same files again if needed
         e.target.value = '';
     };
 
-    const handleRemoveNewImage = (id) => {
-        setNewImages(prev => prev.filter(img => img.id !== id));
+    const handleRemoveImage = (id) => {
+        setDisplayImages(prev => prev.filter(img => img.id !== id));
     };
 
-    const handleRemoveExistingImage = (indexToRemove) => {
-        setForm(prev => ({
-            ...prev,
-            images: prev.images.filter((_, idx) => idx !== indexToRemove)
-        }));
+    // Drag and Drop Handlers
+    const handleSort = () => {
+        let _displayImages = [...displayImages];
+        const draggedItemContent = _displayImages.splice(dragItem.current, 1)[0];
+        _displayImages.splice(dragOverItem.current, 0, draggedItemContent);
+        dragItem.current = null;
+        dragOverItem.current = null;
+        setDisplayImages(_displayImages);
     };
 
     const generateListingNo = () => {
-        // Parse listing numbers to find the highest existing number using the new sequence
-        // Old system used random 7-digit numbers (>= 1,000,000)
-        // We filter those out to start our new sequence from 500
         const sequentialNumbers = listings
             .map(l => parseInt(l.listing_no))
             .filter(n => !isNaN(n) && n < 1000000);
@@ -223,24 +250,36 @@ const Dashboard = () => {
         setUploading(true);
 
         try {
-            let uploadedUrls = [];
+            // 1. Separate items
+            const existingItems = displayImages.filter(i => i.type === 'existing');
+            const newItems = displayImages.filter(i => i.type === 'new');
 
-            if (newImages.length > 0) {
-                const filesToUpload = newImages.map(img => img.file);
+            // 2. Upload new files
+            let uploadedUrls = [];
+            if (newItems.length > 0) {
+                const filesToUpload = newItems.map(img => img.file);
                 uploadedUrls = await uploadImages(filesToUpload);
             }
 
-            // Combine new URLs with existing ones
-            const finalImages = [...(form.images || []), ...uploadedUrls];
-            const mainImage = finalImages.length > 0 ? finalImages[0] : form.image;
+            // 3. Reconstruct the ordered list of URLs
+            // We need to map the original 'displayImages' order to the final URLs
+            // We use a pointer for the uploadedUrls array
+            let uploadPtr = 0;
+            const finalImages = displayImages.map(item => {
+                if (item.type === 'existing') {
+                    return item.url;
+                } else {
+                    return uploadedUrls[uploadPtr++];
+                }
+            });
+
+            const mainImage = finalImages.length > 0 ? finalImages[0] : '';
 
             let finalListingNo = form.listing_no;
-            // Generate listing number if creating new and empty
             if (!editingId && !finalListingNo) {
                 finalListingNo = generateListingNo();
             }
 
-            // Sanitize numeric fields to avoid "invalid input syntax for type numeric" errors
             const sanitizeNumeric = (val) => (val === '' ? null : val);
 
             const formData = {
@@ -248,8 +287,7 @@ const Dashboard = () => {
                 listing_no: finalListingNo,
                 images: finalImages,
                 image: mainImage,
-                // Explicitly sanitize numeric optional/required fields
-                price: sanitizeNumeric(form.price),
+                price: form.price ? form.price.toString().replace(/\./g, '') : null,
                 net_sqm: sanitizeNumeric(form.net_sqm),
                 gross_sqm: sanitizeNumeric(form.gross_sqm),
                 baths: sanitizeNumeric(form.baths),
@@ -272,7 +310,7 @@ const Dashboard = () => {
                 setView('list');
                 setForm(initialFormState);
                 setEditingId(null);
-                setNewImages([]);
+                setDisplayImages([]);
             } else {
                 alert('Hata: ' + result.error);
             }
@@ -284,6 +322,18 @@ const Dashboard = () => {
     };
 
 
+
+    const handlePriceChange = (e) => {
+        // Allow digits only
+        let raw = e.target.value.replace(/\D/g, '');
+        if (raw) {
+            // Format with dots
+            const formatted = Number(raw).toLocaleString('tr-TR');
+            setForm(prev => ({ ...prev, price: formatted }));
+        } else {
+            setForm(prev => ({ ...prev, price: '' }));
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -328,7 +378,7 @@ const Dashboard = () => {
                                 onClick={() => {
                                     setEditingId(null);
                                     setForm(initialFormState);
-                                    setNewImages([]);
+                                    setDisplayImages([]);
                                     setLocCity('');
                                     setLocDistrict('');
                                     setView('form');
@@ -429,7 +479,15 @@ const Dashboard = () => {
                                 </div>
                                 <div>
                                     <label className="label">Fiyat (TL)</label>
-                                    <input type="number" name="price" value={form.price} onChange={handleChange} required className="input" />
+                                    <input
+                                        type="text"
+                                        name="price"
+                                        value={form.price}
+                                        onChange={handlePriceChange}
+                                        required
+                                        className="input"
+                                        placeholder="0.000"
+                                    />
                                 </div>
                                 <div>
                                     <label className="label">Para Birimi</label>
@@ -465,6 +523,7 @@ const Dashboard = () => {
                                         onChange={(e) => {
                                             setLocCity(e.target.value);
                                             setLocDistrict('');
+                                            setLocNeighborhood('');
                                         }}
                                         className="input mb-4"
                                     >
@@ -477,13 +536,29 @@ const Dashboard = () => {
                                     <label className="label">İlçe</label>
                                     <select
                                         value={locDistrict}
-                                        onChange={(e) => setLocDistrict(e.target.value)}
+                                        onChange={(e) => {
+                                            setLocDistrict(e.target.value);
+                                            setLocNeighborhood('');
+                                        }}
                                         disabled={!locCity}
-                                        className="input"
+                                        className="input mb-4"
                                     >
                                         <option value="">İlçe Seçiniz</option>
-                                        {locCity && LOCATIONS[locCity]?.map(dist => (
+                                        {locCity && LOCATIONS[locCity] && Object.keys(LOCATIONS[locCity]).map(dist => (
                                             <option key={dist} value={dist}>{dist}</option>
+                                        ))}
+                                    </select>
+
+                                    <label className="label">Mahalle</label>
+                                    <select
+                                        value={locNeighborhood}
+                                        onChange={(e) => setLocNeighborhood(e.target.value)}
+                                        disabled={!locDistrict}
+                                        className="input"
+                                    >
+                                        <option value="">Mahalle Seçiniz</option>
+                                        {locCity && locDistrict && LOCATIONS[locCity]?.[locDistrict]?.map(neighborhood => (
+                                            <option key={neighborhood} value={neighborhood}>{neighborhood}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -506,8 +581,6 @@ const Dashboard = () => {
                                         <option value="Daire">Daire</option>
                                         <option value="Villa">Villa</option>
                                         <option value="Rezidans">Rezidans</option>
-                                        <option value="Arsa">Arsa</option>
-                                        <option value="Tarla">Tarla</option>
                                         <option value="Dükkan">Dükkan</option>
                                     </select>
                                 </div>
@@ -517,6 +590,7 @@ const Dashboard = () => {
                                         <option value="Satılık">Satılık</option>
                                         <option value="Kiralık">Kiralık</option>
                                         <option value="Devren Satılık">Devren Satılık</option>
+                                        <option value="Devren Kiralık">Devren Kiralık</option>
                                     </select>
                                 </div>
                                 <div>
@@ -697,42 +771,56 @@ const Dashboard = () => {
                                         className="hidden"
                                     />
                                     <span className="text-sm text-slate-500">
-                                        {form.images.length + newImages.length} Resim Seçili
+                                        {displayImages.length} Resim Seçili (Sürükle bırak ile sıralayabilirsiniz)
                                     </span>
                                 </div>
 
                                 {uploading && <p className="text-sm text-yellow-600 mb-2 font-bold animate-pulse">Resimler yükleniyor ve ilan oluşturuluyor...</p>}
 
                                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                                    {/* Existing Images */}
-                                    {form.images && form.images.map((img, idx) => (
-                                        <div key={`existing-${idx}`} className="relative group aspect-square">
-                                            <img src={img} alt={`Mevcut ${idx}`} className="w-full h-full object-cover rounded-lg shadow-sm border border-slate-200" />
+                                    {displayImages.map((img, index) => (
+                                        <div
+                                            key={img.id}
+                                            className="relative group aspect-square cursor-grab active:cursor-grabbing"
+                                            draggable
+                                            onDragStart={(e) => {
+                                                dragItem.current = index;
+                                                e.dataTransfer.effectAllowed = "move";
+                                            }}
+                                            onDragEnter={(e) => {
+                                                dragOverItem.current = index;
+                                            }}
+                                            onDragEnd={handleSort}
+                                            onDragOver={(e) => e.preventDefault()}
+                                        >
+                                            <img
+                                                src={img.url}
+                                                alt={`Görsel ${index}`}
+                                                className={`w-full h-full object-cover rounded-lg shadow-sm border-2 ${img.type === 'new' ? 'border-secondary' : 'border-slate-200'}`}
+                                            />
+
+                                            {/* Order Badge */}
+                                            <div className="absolute top-2 left-2 bg-black/60 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold backdrop-blur-sm pointer-events-none">
+                                                {index + 1}
+                                            </div>
+
+                                            {/* Drag Handle Icon (Visual Cue) */}
+                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 group-hover:opacity-70 pointer-events-none drop-shadow-lg">
+                                                <Move size={32} />
+                                            </div>
+
                                             <button
                                                 type="button"
-                                                onClick={() => handleRemoveExistingImage(idx)}
-                                                className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-700"
+                                                onClick={() => handleRemoveImage(img.id)}
+                                                className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-100 shadow-md hover:bg-red-700 z-10"
                                                 title="Resmi Kaldır"
                                             >
                                                 <X size={14} />
                                             </button>
-                                            <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded backdrop-blur-sm">Mevcut</span>
-                                        </div>
-                                    ))}
 
-                                    {/* New Images Previews */}
-                                    {newImages.map((imgObj) => (
-                                        <div key={imgObj.id} className="relative group aspect-square">
-                                            <img src={imgObj.preview} alt="Yeni Yüklenecek" className="w-full h-full object-cover rounded-lg shadow-sm border-2 border-secondary" />
-                                            <button
-                                                type="button"
-                                                onClick={() => handleRemoveNewImage(imgObj.id)}
-                                                className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-100 shadow-md hover:bg-red-700"
-                                                title="İptal Et"
-                                            >
-                                                <X size={14} />
-                                            </button>
-                                            <span className="absolute bottom-2 left-2 bg-secondary text-black text-[10px] px-2 py-0.5 rounded font-bold">Yeni</span>
+                                            <span className={`absolute bottom-2 left-2 text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm ${img.type === 'new' ? 'bg-secondary text-black' : 'bg-black/60 text-white'}`}>
+                                                {img.type === 'new' ? 'Yeni' : 'Mevcut'}
+                                            </span>
                                         </div>
                                     ))}
                                 </div>
