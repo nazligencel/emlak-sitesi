@@ -39,7 +39,12 @@ const ListingCard = ({ listing, index }) => {
                 {/* Content */}
                 <div className="p-5">
                     <div className="text-secondary font-bold text-xl mb-1">
-                        {listing.price ? Number(listing.price).toLocaleString('tr-TR') : 0} ₺
+                        {listing.price ? Number(listing.price).toLocaleString('tr-TR') : 0} {{
+                            'USD': '$',
+                            'EUR': '€',
+                            'GBP': '£',
+                            'TL': '₺'
+                        }[listing.currency] || '₺'}
                     </div>
                     <h3 className="text-slate-800 font-bold text-lg mb-2 line-clamp-1 group-hover:text-secondary transition-colors">
                         {listing.title}

@@ -306,7 +306,7 @@ const Dashboard = () => {
                                             <td className="p-4 font-medium text-primary whitespace-nowrap">{listing.title}</td>
                                             <td className="p-4 text-slate-500 whitespace-nowrap">{listing.location}</td>
                                             <td className="p-4 font-bold text-secondary whitespace-nowrap">
-                                                {Number(listing.price).toLocaleString('tr-TR')} TL
+                                                {Number(listing.price).toLocaleString('tr-TR')} {listing.currency || 'TL'}
                                             </td>
                                             <td className="p-4 text-right whitespace-nowrap">
                                                 <button
