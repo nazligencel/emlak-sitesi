@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useListings } from '../context/ListingContext';
 import { MapPin, Ruler, Bed, Square, Home, Utensils, ArrowLeft, Phone, CheckCircle2, ChevronLeft, ChevronRight, Share2, X, Compass } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,6 +10,8 @@ const ListingDetail = () => {
     const { listings, loading } = useListings();
     const [activeTab, setActiveTab] = useState('details');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    // Refs
+    const scrollContainerRef = useRef(null);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
     // Find listing
@@ -36,10 +38,56 @@ const ListingDetail = () => {
         setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
     };
 
+    // Scroll Handler for Lightbox
+    const handleScroll = () => {
+        if (scrollContainerRef.current) {
+            const index = Math.round(scrollContainerRef.current.scrollLeft / scrollContainerRef.current.clientWidth);
+            if (index !== currentImageIndex) {
+                setCurrentImageIndex(index);
+            }
+        }
+    };
+
+    // Sync scroll position when opening lightbox
     useEffect(() => {
-        // Reset image index when listing changes
-        setCurrentImageIndex(0);
-    }, [id]);
+        if (isLightboxOpen && scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({
+                left: currentImageIndex * scrollContainerRef.current.clientWidth,
+                behavior: 'instant'
+            });
+        }
+    }, [isLightboxOpen]);
+
+    const scrollToImage = (index) => {
+        if (scrollContainerRef.current) {
+            scrollContainerRef.current.scrollTo({
+                left: index * scrollContainerRef.current.clientWidth,
+                behavior: 'smooth'
+            });
+        }
+    };
+
+    const handleNext = () => {
+        if (isLightboxOpen) {
+            const nextIndex = (currentImageIndex + 1) % allImages.length;
+            scrollToImage(nextIndex);
+        } else {
+            nextImage();
+        }
+    };
+
+    const handlePrev = () => {
+        if (isLightboxOpen) {
+            const prevIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
+            scrollToImage(prevIndex);
+        } else {
+            prevImage();
+        }
+    };
+
+    // ... (rest of component render)
+
+
 
     if (loading) return <div className="pt-32 text-center text-white">Yükleniyor...</div>;
 
@@ -350,44 +398,61 @@ const ListingDetail = () => {
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center"
                     >
+                        {/* Close Button */}
                         <button
                             onClick={() => setIsLightboxOpen(false)}
-                            className="absolute top-6 right-6 text-white/80 hover:text-white z-[70] p-2 hover:bg-white/10 rounded-full transition-colors"
+                            className="absolute top-4 right-4 md:top-6 md:right-6 text-white/80 hover:text-white z-[70] p-2 bg-black/20 hover:bg-white/10 rounded-full transition-colors backdrop-blur-sm"
                         >
                             <X size={32} />
                         </button>
 
                         <button
-                            onClick={(e) => { e.preventDefault(); prevImage(); }}
-                            className="absolute left-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-[70] p-4 hover:bg-white/10 rounded-full transition-colors"
+                            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                            className="hidden md:block absolute left-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-[70] p-4 hover:bg-white/10 rounded-full transition-colors"
                         >
                             <ChevronLeft size={48} />
                         </button>
 
                         <button
-                            onClick={(e) => { e.preventDefault(); nextImage(); }}
-                            className="absolute right-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-[70] p-4 hover:bg-white/10 rounded-full transition-colors"
+                            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                            className="hidden md:block absolute right-6 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-[70] p-4 hover:bg-white/10 rounded-full transition-colors"
                         >
                             <ChevronRight size={48} />
                         </button>
 
-                        <div className="relative w-full h-full p-4 md:p-12 flex items-center justify-center">
-                            <motion.img
-                                key={`lightbox-${currentImageIndex}`}
-                                src={allImages[currentImageIndex]}
-                                alt={listing.title}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.2 }}
-                                className="max-w-full max-h-full object-contain pointer-events-none select-none"
-                            />
-                            {/* Watermark in Lightbox */}
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[65] opacity-30 md:opacity-30 select-none overflow-hidden">
-                                <div className="text-white text-4xl md:text-9xl font-bold -rotate-12 whitespace-nowrap drop-shadow-2xl opacity-50">
-                                    TOPCU
+                        {/* Image Counter */}
+                        <div className="absolute top-6 left-6 z-[70] text-white/90 font-medium bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm">
+                            {currentImageIndex + 1} / {allImages.length}
+                        </div>
+
+                        {/* Native Scroll Gallery */}
+                        <div
+                            ref={scrollContainerRef}
+                            className="w-full h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
+                            onScroll={handleScroll}
+                        >
+                            {allImages.map((src, idx) => (
+                                <div key={idx} className="min-w-full w-full h-full flex items-center justify-center snap-center relative p-2 md:p-12">
+                                    <img
+                                        src={src}
+                                        alt={`${listing.title} - ${idx + 1}`}
+                                        className="max-h-full max-w-full object-contain pointer-events-none select-none"
+                                    />
                                 </div>
+                            ))}
+                        </div>
+
+                        {/* Watermark in Lightbox (Fixed Overlay) */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[65] opacity-[0.15] select-none overflow-hidden">
+                            <div className="text-white text-5xl md:text-9xl font-bold -rotate-12 whitespace-nowrap drop-shadow-2xl">
+                                TOPCU
                             </div>
                         </div>
+
+                        <style>{`
+                            .no-scrollbar::-webkit-scrollbar { display: none; }
+                            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                        `}</style>
                     </motion.div>
                 )}
             </AnimatePresence>
