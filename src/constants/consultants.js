@@ -26,7 +26,7 @@ export const CONSULTANTS = [
     },
     {
         id: 4,
-        name: "Ahmet Erol",
+        name: "Ahmet EROL",
         role: "Gayrimenkul Danışmanı",
         image: "/consultants/ahmet_erol.jpg",
         phone: "0(545) 532 05 22",

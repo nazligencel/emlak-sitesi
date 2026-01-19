@@ -68,9 +68,9 @@ const ListingCard = ({ listing, index }) => {
                             <Square size={16} className="text-slate-400" />
                             <span>{listing.sqm || listing.gross_sqm || '-'} m²</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <Compass size={16} className="text-slate-400" />
-                            <span>{listing.facade}</span>
+                        <div className="flex items-center gap-1 min-w-0">
+                            <Compass size={16} className="text-slate-400 shrink-0" />
+                            <span className="truncate">{listing.facade}</span>
                         </div>
                     </div>
                 </div>

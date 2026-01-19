@@ -17,6 +17,7 @@ const Dashboard = () => {
     const [uploading, setUploading] = useState(false);
 
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterConsultant, setFilterConsultant] = useState('');
     const [locCity, setLocCity] = useState('');
     const [locDistrict, setLocDistrict] = useState('');
 
@@ -31,12 +32,44 @@ const Dashboard = () => {
     // Filter Logic
     const filteredListings = listings.filter(listing => {
         const term = searchTerm.toLowerCase();
-        return (
+
+        // Find consultant for name search
+        const consultant = CONSULTANTS.find(c => c.id === listing.consultant_id);
+        const consultantName = consultant ? consultant.name.toLowerCase() : '';
+
+        const matchesSearch = (
             (listing.listing_no?.toString() || '').includes(term) ||
             listing.title?.toLowerCase().includes(term) ||
-            listing.location?.toLowerCase().includes(term)
+            listing.location?.toLowerCase().includes(term) ||
+            consultantName.includes(term)
         );
+        const matchesConsultant = filterConsultant ? listing.consultant_id === parseInt(filterConsultant) : true;
+
+        return matchesSearch && matchesConsultant;
     });
+
+    // ... (rest of search/filter code)
+
+    const handleFacadeChange = (e) => {
+        const { value, checked } = e.target;
+        let currentFacades = form.facade ? form.facade.split(' - ') : [];
+
+        if (checked) {
+            currentFacades.push(value);
+        } else {
+            currentFacades = currentFacades.filter(f => f !== value);
+        }
+
+        // Sort to keep order consistent, or just join
+        // Order: Kuzey, Güney, Doğu, Batı
+        const order = ['Kuzey', 'Güney', 'Doğu', 'Batı'];
+        currentFacades.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+
+        setForm(prev => ({
+            ...prev,
+            facade: currentFacades.join(' - ')
+        }));
+    };
 
     // Form state...
     const initialFormState = {
@@ -207,11 +240,24 @@ const Dashboard = () => {
                 finalListingNo = generateListingNo();
             }
 
+            // Sanitize numeric fields to avoid "invalid input syntax for type numeric" errors
+            const sanitizeNumeric = (val) => (val === '' ? null : val);
+
             const formData = {
                 ...form,
                 listing_no: finalListingNo,
                 images: finalImages,
-                image: mainImage
+                image: mainImage,
+                // Explicitly sanitize numeric optional/required fields
+                price: sanitizeNumeric(form.price),
+                net_sqm: sanitizeNumeric(form.net_sqm),
+                gross_sqm: sanitizeNumeric(form.gross_sqm),
+                baths: sanitizeNumeric(form.baths),
+                building_age: sanitizeNumeric(form.building_age),
+                total_floors: sanitizeNumeric(form.total_floors),
+                dues: sanitizeNumeric(form.dues),
+                deposit: sanitizeNumeric(form.deposit),
+                consultant_id: parseInt(form.consultant_id)
             };
 
             let result;
@@ -237,6 +283,8 @@ const Dashboard = () => {
         }
     };
 
+
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setForm(prev => ({
@@ -252,15 +300,27 @@ const Dashboard = () => {
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                         <h1 className="text-3xl font-bold text-primary whitespace-nowrap w-full md:w-auto text-center md:text-left">İlan Yönetimi</h1>
 
-                        <div className="flex-1 w-full md:w-auto max-w-md relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                            <input
-                                type="text"
-                                placeholder="İlan No, Başlık veya Konum ile ara..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
-                            />
+                        <div className="flex flex-col md:flex-row gap-2 flex-1 max-w-3xl w-full mx-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                                <input
+                                    type="text"
+                                    placeholder="İlan No, Başlık veya Konum ile ara..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                                />
+                            </div>
+                            <select
+                                value={filterConsultant}
+                                onChange={(e) => setFilterConsultant(e.target.value)}
+                                className="w-full md:w-48 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary bg-white"
+                            >
+                                <option value="">Tüm Danışmanlar</option>
+                                {CONSULTANTS.filter(c => c.name !== "Mesut TOPCU").map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
+                                ))}
+                            </select>
                         </div>
 
                         <div className="flex gap-4 w-full md:w-auto justify-center md:justify-end">
@@ -558,17 +618,20 @@ const Dashboard = () => {
                                 </div>
                                 <div>
                                     <label className="label">Cephe</label>
-                                    <select name="facade" value={form.facade} onChange={handleChange} className="input">
-                                        <option value="">Seçiniz</option>
-                                        <option value="Kuzey">Kuzey</option>
-                                        <option value="Güney">Güney</option>
-                                        <option value="Doğu">Doğu</option>
-                                        <option value="Batı">Batı</option>
-                                        <option value="Kuzey-Doğu">Kuzey-Doğu</option>
-                                        <option value="Kuzey-Batı">Kuzey-Batı</option>
-                                        <option value="Güney-Doğu">Güney-Doğu</option>
-                                        <option value="Güney-Batı">Güney-Batı</option>
-                                    </select>
+                                    <div className="grid grid-cols-2 gap-2 bg-white p-3 border border-slate-200 rounded-lg">
+                                        {['Kuzey', 'Güney', 'Doğu', 'Batı'].map(facadeOption => (
+                                            <label key={facadeOption} className="flex items-center gap-2 cursor-pointer text-sm text-slate-600 hover:text-primary">
+                                                <input
+                                                    type="checkbox"
+                                                    value={facadeOption}
+                                                    checked={form.facade?.split(' - ').includes(facadeOption)}
+                                                    onChange={handleFacadeChange}
+                                                    className="w-4 h-4 text-secondary rounded focus:ring-secondary border-slate-300"
+                                                />
+                                                <span>{facadeOption}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="label">Depozito</label>
