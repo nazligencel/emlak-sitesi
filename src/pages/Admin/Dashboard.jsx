@@ -550,17 +550,13 @@ const Dashboard = () => {
                                     </select>
 
                                     <label className="label">Mahalle</label>
-                                    <select
+                                    <input
+                                        type="text"
                                         value={locNeighborhood}
                                         onChange={(e) => setLocNeighborhood(e.target.value)}
-                                        disabled={!locDistrict}
                                         className="input"
-                                    >
-                                        <option value="">Mahalle Seçiniz</option>
-                                        {locCity && locDistrict && LOCATIONS[locCity]?.[locDistrict]?.map(neighborhood => (
-                                            <option key={neighborhood} value={neighborhood}>{neighborhood}</option>
-                                        ))}
-                                    </select>
+                                        placeholder="Mahalle giriniz"
+                                    />
                                 </div>
                                 <div>
                                     <label className="label">İlan Sorumlusu (Danışman)</label>

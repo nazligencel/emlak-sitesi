@@ -29,7 +29,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/ilanlar" element={<Listings />} />
-            <Route path="/ilan/:id" element={<ListingDetail />} />
+            <Route path="/ilan/:slug" element={<ListingDetail />} />
             <Route path="/danismanlar" element={<Consultants />} />
             <Route path="/hakkimizda" element={<About />} />
             <Route path="/iletisim" element={<Contact />} />
