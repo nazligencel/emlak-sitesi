@@ -8,11 +8,11 @@ const Hero = () => {
     const navigate = useNavigate();
     const [selectedCity, setSelectedCity] = useState('Antalya');
     const [selectedDistrict, setSelectedDistrict] = useState('');
-    const [selectedNeighborhood, setSelectedNeighborhood] = useState('');
+
 
     const handleSearch = () => {
         // Build search term prioritizing the most specific location
-        const searchParts = [selectedNeighborhood, selectedDistrict, selectedCity].filter(Boolean);
+        const searchParts = [selectedDistrict, selectedCity].filter(Boolean);
         const searchTerm = searchParts.length > 0 ? searchParts.join(', ') : selectedCity;
         navigate('/ilanlar', { state: { location: searchTerm } });
     };
@@ -57,10 +57,10 @@ const Hero = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.4 }}
-                    className="bg-white/10 backdrop-blur-md p-4 rounded-2xl md:rounded-full border border-white/20 shadow-2xl max-w-5xl mx-auto flex flex-col md:flex-row gap-4 relative z-30"
+                    className="bg-white/10 backdrop-blur-md p-4 rounded-2xl md:rounded-full border border-white/20 shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4 relative z-30"
                 >
                     {/* City Selector */}
-                    <div className="relative min-w-[160px]">
+                    <div className="relative min-w-[180px]">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">
                             <MapPin size={20} />
                         </div>
@@ -70,7 +70,7 @@ const Hero = () => {
                             onChange={(e) => {
                                 setSelectedCity(e.target.value);
                                 setSelectedDistrict('');
-                                setSelectedNeighborhood('');
+
                             }}
                         >
                             {Object.keys(LOCATIONS).map(city => (
@@ -83,37 +83,19 @@ const Hero = () => {
                     </div>
 
                     {/* District Selector */}
-                    <div className="relative flex-1 min-w-[160px]">
+                    <div className="relative flex-1 min-w-[180px]">
                         <select
                             className="w-full bg-white/90 text-slate-800 px-6 py-3.5 rounded-full outline-none focus:ring-2 focus:ring-secondary appearance-none cursor-pointer font-medium disabled:opacity-70 disabled:cursor-not-allowed"
                             value={selectedDistrict}
                             onChange={(e) => {
                                 setSelectedDistrict(e.target.value);
-                                setSelectedNeighborhood('');
+
                             }}
                             disabled={!selectedCity}
                         >
                             <option value="">{selectedCity ? 'İlçe Seçiniz' : 'Önce Şehir'}</option>
                             {selectedCity && LOCATIONS[selectedCity] && Object.keys(LOCATIONS[selectedCity]).map(district => (
                                 <option key={district} value={district}>{district}</option>
-                            ))}
-                        </select>
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                        </div>
-                    </div>
-
-                    {/* Neighborhood Selector */}
-                    <div className="relative flex-1 min-w-[160px]">
-                        <select
-                            className="w-full bg-white/90 text-slate-800 px-6 py-3.5 rounded-full outline-none focus:ring-2 focus:ring-secondary appearance-none cursor-pointer font-medium disabled:opacity-70 disabled:cursor-not-allowed"
-                            value={selectedNeighborhood}
-                            onChange={(e) => setSelectedNeighborhood(e.target.value)}
-                            disabled={!selectedDistrict}
-                        >
-                            <option value="">{selectedDistrict ? 'Mahalle Seçiniz' : 'Önce İlçe'}</option>
-                            {selectedCity && selectedDistrict && LOCATIONS[selectedCity]?.[selectedDistrict]?.map(neighborhood => (
-                                <option key={neighborhood} value={neighborhood}>{neighborhood}</option>
                             ))}
                         </select>
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">

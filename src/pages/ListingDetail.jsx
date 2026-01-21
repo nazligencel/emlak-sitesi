@@ -6,13 +6,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CONSULTANTS } from '../constants/consultants';
 
 const ListingDetail = () => {
-    const { id } = useParams();
+    const { slug } = useParams();
     const { listings, loading } = useListings();
     const [activeTab, setActiveTab] = useState('details');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     // Refs
     const scrollContainerRef = useRef(null);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+    // Parse ID from slug (e.g., "satilik-daire-123" -> 123)
+    // If slug is just "123", parsedId will be 123
+    const id = slug ? slug.split('-').pop() : null;
 
     // Find listing
     const listing = listings.find(l => l.id.toString() === id);
@@ -207,14 +211,14 @@ const ListingDetail = () => {
                                             {listing.status}
                                         </span>
                                     </div>
-                                    <h1 className="text-xl md:text-5xl font-bold mb-1 md:mb-2 leading-tight shadow-md line-clamp-2 md:line-clamp-none">{listing.title}</h1>
+                                    <h1 className="text-xl md:text-3xl font-bold mb-1 md:mb-2 leading-tight shadow-md line-clamp-2 md:line-clamp-none">{listing.title}</h1>
                                     <div className="flex items-center gap-1 md:gap-2 text-slate-200 text-sm md:text-lg">
                                         <MapPin size={16} className="text-secondary md:w-5 md:h-5" />
                                         {listing.location}
                                     </div>
                                 </div>
-                                <div className="text-left md:text-right">
-                                    <div className="text-2xl md:text-5xl font-bold text-secondary drop-shadow-lg">
+                                <div className="text-left md:text-right shrink-0">
+                                    <div className="text-2xl md:text-5xl font-bold text-secondary drop-shadow-lg whitespace-nowrap">
                                         {Number(listing.price || 0).toLocaleString('tr-TR')} {currencySymbol}
                                     </div>
                                 </div>
