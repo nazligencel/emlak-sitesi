@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useListings } from '../context/ListingContext';
-import { MapPin, Ruler, Bed, Square, Home, Utensils, ArrowLeft, Phone, CheckCircle2, ChevronLeft, ChevronRight, Share2, X, Compass } from 'lucide-react';
+import { MapPin, Ruler, Bed, Square, Home, Utensils, ArrowLeft, Phone, CheckCircle2, ChevronLeft, ChevronRight, Share2, X, Compass, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CONSULTANTS } from '../constants/consultants';
 
@@ -14,13 +14,15 @@ const ListingDetail = () => {
     const scrollContainerRef = useRef(null);
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-    // Parse ID from slug (e.g., "satilik-daire-123" -> 123)
-    // If slug is just "123", parsedId will be 123
+    // Parse ID
     const id = slug ? slug.split('-').pop() : null;
 
     // Find listing
     const listing = listings.find(l => l.id.toString() === id);
     const assignedConsultant = CONSULTANTS.find(c => c.id === listing?.consultant_id) || CONSULTANTS[0];
+
+    // Determine if it is a Land/Field listing
+    const isLand = listing && ['Satılık Arsa', 'Satılık Tarla'].includes(listing.type);
 
     const currencySymbol = {
         'USD': '$',
@@ -89,10 +91,6 @@ const ListingDetail = () => {
         }
     };
 
-    // ... (rest of component render)
-
-
-
     if (loading) return <div className="pt-32 text-center text-white">Yükleniyor...</div>;
 
     if (!listing) return (
@@ -103,7 +101,7 @@ const ListingDetail = () => {
     );
 
     return (
-        <div className="pt-24 pb-20 bg-primary min-h-screen font-sans">
+        <div className="pt-24 pb-20 bg-primary min-h-screen">
             <div className="container mx-auto px-4 md:px-6">
                 {/* Build Navigation & Actions */}
                 <div className="flex justify-between items-center mb-6">
@@ -131,7 +129,6 @@ const ListingDetail = () => {
                                         alert('İlan bağlantısı kopyalandı!');
                                     } catch (clipboardErr) {
                                         console.error('Clipboard failed', clipboardErr);
-                                        // Legacy Fallback
                                         const textArea = document.createElement("textarea");
                                         textArea.value = window.location.href;
                                         document.body.appendChild(textArea);
@@ -155,8 +152,8 @@ const ListingDetail = () => {
                 </div>
 
                 <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-700/50">
-                    {/* Header Image Gallery - Full Width Slider Style */}
-                    <div className="relative group h-[500px] md:h-[700px] bg-slate-900 overflow-hidden">
+                    {/* Header Image Gallery - Compact Modern Style */}
+                    <div className="relative group h-[350px] md:h-[500px] bg-slate-900 overflow-hidden">
                         <AnimatePresence mode='wait'>
                             <motion.img
                                 key={currentImageIndex}
@@ -171,54 +168,60 @@ const ListingDetail = () => {
                             />
                         </AnimatePresence>
 
-                        {/* Watermark */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 opacity-30 md:opacity-40 select-none overflow-hidden">
-                            <div className="text-white text-4xl md:text-8xl font-bold -rotate-12 whitespace-nowrap drop-shadow-lg opacity-50">
+                        {/* Watermark - Smaller */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 opacity-20 md:opacity-30 select-none overflow-hidden">
+                            <div className="text-white text-3xl md:text-6xl font-bold -rotate-12 whitespace-nowrap drop-shadow-lg opacity-50">
                                 TOPCU
                             </div>
                         </div>
 
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90 pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 pointer-events-none" />
 
                         {/* Navigation Arrows */}
                         {allImages.length > 1 && (
                             <>
                                 <button
                                     onClick={(e) => { e.preventDefault(); prevImage(); }}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10 z-20"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10 z-20"
                                 >
-                                    <ChevronLeft size={32} />
+                                    <ChevronLeft size={24} />
                                 </button>
                                 <button
                                     onClick={(e) => { e.preventDefault(); nextImage(); }}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10 z-20"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-sm transition-all opacity-0 group-hover:opacity-100 border border-white/10 z-20"
                                 >
-                                    <ChevronRight size={32} />
+                                    <ChevronRight size={24} />
                                 </button>
                             </>
                         )}
 
-                        {/* Title & Price Overlay */}
-                        {/* Title & Price Overlay */}
-                        <div className="absolute bottom-0 left-0 right-0 p-4 md:p-12 text-white z-10 pointer-events-none">
-                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-3 md:gap-6">
+                        {/* Title & Price Overlay - Compact */}
+                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white z-10 pointer-events-none">
+                            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                                 <div>
-                                    <div className="flex gap-2, mb-2 md:mb-3">
-                                        <span className="bg-secondary text-black text-[10px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full uppercase tracking-wider">
+                                    <div className="flex gap-2 mb-2">
+                                        <span className="bg-secondary text-black text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-md uppercase tracking-wider shadow-lg">
                                             {listing.type}
                                         </span>
-                                        <span className="bg-primary/90 text-white border border-white/20 text-[10px] md:text-xs font-bold px-2 md:px-3 py-0.5 md:py-1 rounded-full uppercase tracking-wider">
+                                        <span className="bg-black/60 backdrop-blur-md text-white border border-white/10 text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-md uppercase tracking-wider">
                                             {listing.status}
                                         </span>
+                                        {listing.is_opportunity && (
+                                            <span className="bg-red-600 text-white text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-md uppercase tracking-wider animate-pulse">
+                                                FIRSAT
+                                            </span>
+                                        )}
                                     </div>
-                                    <h1 className="text-xl md:text-3xl font-bold mb-1 md:mb-2 leading-tight shadow-md line-clamp-2 md:line-clamp-none">{listing.title}</h1>
-                                    <div className="flex items-center gap-1 md:gap-2 text-slate-200 text-sm md:text-lg">
-                                        <MapPin size={16} className="text-secondary md:w-5 md:h-5" />
+                                    <h1 className="text-xl md:text-3xl font-bold mb-1 leading-tight text-white/95 shadow-lg line-clamp-2 md:line-clamp-none max-w-3xl">
+                                        {listing.title}
+                                    </h1>
+                                    <div className="flex items-center gap-1.5 text-slate-300 text-sm font-medium">
+                                        <MapPin size={14} className="text-secondary" />
                                         {listing.location}
                                     </div>
                                 </div>
                                 <div className="text-left md:text-right shrink-0">
-                                    <div className="text-2xl md:text-5xl font-bold text-secondary drop-shadow-lg whitespace-nowrap">
+                                    <div className="text-2xl md:text-4xl font-bold text-secondary drop-shadow-xl whitespace-nowrap tracking-tight">
                                         {Number(listing.price || 0).toLocaleString('tr-TR')} {currencySymbol}
                                     </div>
                                 </div>
@@ -229,24 +232,24 @@ const ListingDetail = () => {
                     {/* Content Section */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 lg:divide-x divide-slate-100">
                         {/* Main Details & Tabs */}
-                        <div className="lg:col-span-2 p-8 md:p-12">
+                        <div className="lg:col-span-2 p-6 md:p-8">
                             {/* Tab Navigation */}
-                            <div className="flex border-b border-slate-200 mb-8">
+                            <div className="flex border-b border-slate-200 mb-6 overflow-x-auto no-scrollbar gap-6">
                                 <button
                                     onClick={() => setActiveTab('details')}
-                                    className={`pb-4 px-4 font-bold text-lg transition-colors border-b-2 ${activeTab === 'details' ? 'border-secondary text-primary' : 'border-transparent text-slate-400 hover:text-primary'}`}
+                                    className={`pb-3 font-bold text-base transition-colors border-b-2 whitespace-nowrap ${activeTab === 'details' ? 'border-secondary text-primary' : 'border-transparent text-slate-400 hover:text-primary'}`}
                                 >
                                     İlan Detayları
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('description')}
-                                    className={`pb-4 px-4 font-bold text-lg transition-colors border-b-2 ${activeTab === 'description' ? 'border-secondary text-primary' : 'border-transparent text-slate-400 hover:text-primary'}`}
+                                    className={`pb-3 font-bold text-base transition-colors border-b-2 whitespace-nowrap ${activeTab === 'description' ? 'border-secondary text-primary' : 'border-transparent text-slate-400 hover:text-primary'}`}
                                 >
                                     Açıklama
                                 </button>
                                 <button
                                     onClick={() => setActiveTab('location')}
-                                    className={`pb-4 px-4 font-bold text-lg transition-colors border-b-2 ${activeTab === 'location' ? 'border-secondary text-primary' : 'border-transparent text-slate-400 hover:text-primary'}`}
+                                    className={`pb-3 font-bold text-base transition-colors border-b-2 whitespace-nowrap ${activeTab === 'location' ? 'border-secondary text-primary' : 'border-transparent text-slate-400 hover:text-primary'}`}
                                 >
                                     Konum
                                 </button>
@@ -258,58 +261,105 @@ const ListingDetail = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3 }}
-                                    className="space-y-12"
+                                    className="space-y-8"
                                 >
-                                    {/* Quick Stats */}
-                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                        <StatBox icon={Ruler} label="Brüt" value={`${listing.sqm || listing.gross_sqm || '-'} m²`} />
-                                        <StatBox icon={Bed} label="Oda" value={listing.beds} />
-                                        <StatBox icon={Utensils} label="Mutfak" value={listing.kitchen || '-'} />
-                                        <StatBox icon={Compass} label="Cephe" value={listing.facade || '-'} />
+                                    {/* Quick Stats - Compact One Row */}
+                                    <div className="grid grid-cols-4 gap-3">
+                                        <StatBox icon={Ruler} label="Alan" value={`${listing.gross_sqm || listing.sqm || '-'} m²`} />
+                                        {isLand ? (
+                                            <>
+                                                <StatBox icon={FileText} label="İmar" value={listing.zoning_status || '-'} />
+                                                <StatBox icon={MapPin} label="Ada" value={listing.ada_no || '-'} />
+                                                <StatBox icon={Compass} label="Parsel" value={listing.parsel_no || '-'} />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <StatBox icon={Bed} label="Oda" value={listing.beds || '-'} />
+                                                <StatBox icon={Utensils} label="Mutfak" value={listing.kitchen || '-'} />
+                                                <StatBox icon={Compass} label="Cephe" value={listing.facade ? (listing.facade.includes('-') ? listing.facade.split(' - ')[0] + '..' : listing.facade) : '-'} />
+                                            </>
+                                        )}
                                     </div>
 
-                                    {/* Details List */}
+
+
+                                    {/* Details List - Single Column Stack */}
                                     <div>
-                                        <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
-                                            <span className="w-1 h-6 bg-secondary rounded-full block"></span>
+                                        <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+                                            <span className="w-1 h-5 bg-secondary rounded-full block"></span>
                                             Genel Bilgiler
                                         </h3>
-                                        <div className="bg-slate-50 rounded-2xl p-8 border border-slate-100">
-                                            <div className="flex flex-col gap-4">
+                                        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                                            <div className="flex flex-col px-5">
                                                 <DetailRow label="İlan No" value={listing.listing_no || `#${listing.id}`} />
                                                 <DetailRow label="Emlak Tipi" value={listing.type} />
-                                                <DetailRow label="Bina Yaşı" value={listing.building_age || 'Sıfır'} />
-                                                <DetailRow label="Kat Sayısı" value={listing.total_floors || '-'} />
-                                                <DetailRow label="Isıtma" value={listing.heating || '-'} />
-                                                <DetailRow label="Kullanım" value={listing.usage_status || 'Boş'} />
-                                                <DetailRow label="Aidat" value={listing.dues ? `${listing.dues} TL` : '-'} />
-                                                <DetailRow label="Depozito" value={listing.deposit ? `${Number(listing.deposit).toLocaleString('tr-TR')} ${currencySymbol}` : '-'} />
-                                                <DetailRow label="Kredi" value={listing.loan_eligible ? 'Uygun' : 'Uygun Değil'} />
                                                 <DetailRow label="Tapu Durumu" value={listing.tapu_status || '-'} />
-                                                <DetailRow label="Cephe" value={listing.facade || '-'} />
-                                                <DetailRow label="Otopark" value={listing.parking && listing.parking !== 'true' && listing.parking !== true ? listing.parking : 'Yok'} />
-                                                <DetailRow label="Mutfak" value={`${listing.kitchen || 'Kapalı'} Mutfak`} />
                                                 <DetailRow label="Takas" value={listing.swap ? 'Olabilir' : 'Yok'} />
+                                                {listing.swap ? <DetailRow label="Takas" value="Olabilir" /> : <DetailRow label="Takas" value="Yok" />}
+
+                                                {isLand ? (
+                                                    // Land Specific Details
+                                                    <>
+                                                        <DetailRow label="İmar Durumu" value={listing.zoning_status || '-'} />
+                                                        <DetailRow label="m² Fiyatı" value={listing.price_per_sqm || '-'} />
+                                                        <DetailRow label="Ada No" value={listing.ada_no || '-'} />
+                                                        <DetailRow label="Parsel No" value={listing.parsel_no || '-'} />
+                                                        <DetailRow label="Kaks (Emsal)" value={listing.kaks || '-'} />
+                                                    </>
+                                                ) : (
+                                                    // Building Specific Details
+                                                    <>
+                                                        <DetailRow label="Bina Yaşı" value={listing.building_age || 'Sıfır'} />
+                                                        <DetailRow label="Kat Sayısı" value={listing.total_floors || '-'} />
+                                                        <DetailRow label="Bulunduğu Kat" value={listing.floor_location || '-'} />
+                                                        <DetailRow label="Isıtma" value={listing.heating || '-'} />
+                                                        <DetailRow label="Kullanım" value={listing.usage_status || 'Boş'} />
+                                                        <DetailRow label="Aidat" value={listing.dues ? `${listing.dues} TL` : '-'} />
+                                                        <DetailRow label="Depozito" value={listing.deposit ? `${Number(listing.deposit).toLocaleString('tr-TR')} ${currencySymbol}` : '-'} />
+                                                        <DetailRow label="Kredi" value={listing.loan_eligible ? 'Uygun' : 'Uygun Değil'} />
+                                                        <DetailRow label="Cephe" value={listing.facade || '-'} />
+                                                        <DetailRow label="Otopark" value={listing.parking && listing.parking !== 'true' && listing.parking !== true ? listing.parking : 'Yok'} />
+                                                        <DetailRow label="Mutfak" value={`${listing.kitchen || 'Kapalı'} Mutfak`} />
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Features */}
-                                    <div>
-                                        <h3 className="text-xl font-bold text-primary mb-6 flex items-center gap-2">
-                                            <span className="w-1 h-6 bg-secondary rounded-full block"></span>
+                                    <div className="mt-8">
+                                        <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
+                                            <span className="w-1 h-5 bg-secondary rounded-full block"></span>
                                             Özellikler
                                         </h3>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                            <FeatureItem label="Balkon" active={listing.balcony} />
-                                            <div className={`flex items-center gap-3 p-3 rounded-lg border ${listing.parking && listing.parking !== 'Yok' && listing.parking !== 'true' && listing.parking !== true ? 'bg-secondary/5 border-secondary/20 text-primary' : 'bg-transparent border-transparent text-slate-400 grayscale opacity-60'}`}>
-                                                <CheckCircle2 size={18} className={listing.parking && listing.parking !== 'Yok' && listing.parking !== 'true' && listing.parking !== true ? 'text-secondary' : 'text-slate-300'} />
-                                                <span className="font-semibold text-sm">Otopark: {listing.parking && listing.parking !== 'true' && listing.parking !== true ? listing.parking : 'Yok'}</span>
-                                            </div>
-                                            <FeatureItem label="Asansör" active={listing.elevator} />
-                                            <FeatureItem label="Eşyalı" active={listing.furnished} />
-                                            <FeatureItem label="Site İçinde" active={listing.in_complex} />
-                                            <FeatureItem label="Kombi" active={listing.heating === 'Kombi'} />
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                            {isLand ? (
+                                                // Land Features
+                                                <>
+                                                    {listing.infrastructure?.split(' - ').map(f => <FeatureItem key={f} label={f} active={true} />)}
+                                                    {listing.location_features?.split(' - ').map(f => <FeatureItem key={f} label={f} active={true} />)}
+                                                    {listing.general_features?.split(' - ').map(f => <FeatureItem key={f} label={f} active={true} />)}
+                                                    {listing.view?.split(' - ').map(f => <FeatureItem key={f} label={f} active={true} />)}
+
+                                                    {/* If empty */}
+                                                    {(!listing.infrastructure && !listing.location_features && !listing.general_features) && (
+                                                        <span className="text-slate-400 italic col-span-2 text-sm">Belirtilmiş özellik yok.</span>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                // Building Features
+                                                <>
+                                                    <FeatureItem label="Balkon" active={listing.balcony} />
+                                                    <div className={`flex items-center gap-2 p-2.5 rounded-lg border ${listing.parking && listing.parking !== 'Yok' && listing.parking !== 'true' && listing.parking !== true ? 'bg-secondary/5 border-secondary/20 text-primary' : 'bg-transparent border-transparent text-slate-400 grayscale opacity-60'}`}>
+                                                        <CheckCircle2 size={16} className={listing.parking && listing.parking !== 'Yok' && listing.parking !== 'true' && listing.parking !== true ? 'text-secondary' : 'text-slate-300'} />
+                                                        <span className="font-semibold text-xs md:text-sm">Otopark: {listing.parking && listing.parking !== 'true' && listing.parking !== true ? listing.parking : 'Yok'}</span>
+                                                    </div>
+                                                    <FeatureItem label="Asansör" active={listing.elevator} />
+                                                    <FeatureItem label="Eşyalı" active={listing.furnished} />
+                                                    <FeatureItem label="Site İçinde" active={listing.in_complex} />
+                                                    <FeatureItem label="Kombi" active={listing.heating === 'Kombi'} />
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </motion.div>
@@ -321,9 +371,9 @@ const ListingDetail = () => {
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3 }}
-                                    className="prose max-w-none text-slate-600 leading-relaxed whitespace-pre-line"
+                                    className="prose prose-slate max-w-none text-slate-600 leading-relaxed whitespace-pre-line text-sm md:text-base"
                                 >
-                                    <h3 className="text-xl font-bold text-primary mb-4">İlan Açıklaması</h3>
+                                    <h3 className="text-lg font-bold text-primary mb-4">İlan Açıklaması</h3>
                                     {listing.description ? (
                                         <p>{listing.description}</p>
                                     ) : (
@@ -339,11 +389,11 @@ const ListingDetail = () => {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.3 }}
                                 >
-                                    <h3 className="text-xl font-bold text-primary mb-4 flex items-center gap-2">
+                                    <h3 className="text-lg font-bold text-primary mb-4 flex items-center gap-2">
                                         <MapPin className="text-secondary" />
                                         {listing.location}
                                     </h3>
-                                    <div className="w-full h-[400px] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200">
+                                    <div className="w-full h-[350px] bg-slate-100 rounded-xl overflow-hidden border border-slate-200">
                                         <iframe
                                             width="100%"
                                             height="100%"
@@ -388,6 +438,8 @@ const ListingDetail = () => {
                                         İlan ile ilgili detaylı bilgi almak için dilediğiniz zaman arayabilirsiniz.
                                     </p>
                                 </div>
+
+
                             </div>
                         </div>
                     </div>
@@ -465,24 +517,24 @@ const ListingDetail = () => {
 };
 
 const StatBox = ({ icon: Icon, label, value }) => (
-    <div className="flex flex-col items-center justify-center p-4 bg-slate-50 rounded-xl border border-slate-200/60 hover:border-secondary/50 transition-colors group">
-        <Icon size={28} className="text-slate-400 mb-2 group-hover:text-secondary transition-colors" />
-        <span className="font-bold text-primary text-sm md:text-base text-center leading-tight">{value}</span>
-        <span className="font-bold text-slate-500 text-sm md:text-base text-center mt-1">{label}</span>
+    <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200/60 hover:border-secondary/50 transition-colors group h-auto min-h-[80px]">
+        <Icon size={20} className="text-slate-400 mb-1.5 group-hover:text-secondary transition-colors" />
+        <span className="font-bold text-primary text-sm text-center leading-tight line-clamp-1 break-all px-1">{value}</span>
+        <span className="font-medium text-slate-400 text-xs text-center mt-0.5">{label}</span>
     </div>
 );
 
-const DetailRow = ({ label, value }) => (
-    <div className="flex justify-between items-center border-b border-slate-100 pb-3 last:border-0">
-        <span className="text-slate-500 font-medium">{label}</span>
-        <span className="text-primary font-semibold">{value}</span>
+const DetailRow = ({ label, value, isHighlight }) => (
+    <div className={`flex justify-between items-center border-b border-slate-100/80 pb-2 last:border-0 ${isHighlight ? 'bg-yellow-50 -mx-3 px-3 py-2 border-yellow-100 rounded-md my-1' : ''}`}>
+        <span className={`${isHighlight ? 'text-yellow-800 font-bold' : 'text-slate-400 font-medium text-sm'}`}>{label}</span>
+        <span className={`${isHighlight ? 'text-yellow-800 font-extrabold' : 'text-primary font-semibold text-sm'}`}>{value}</span>
     </div>
 );
 
 const FeatureItem = ({ label, active }) => (
-    <div className={`flex items-center gap-3 p-3 rounded-lg border ${active ? 'bg-secondary/5 border-secondary/20 text-primary' : 'bg-transparent border-transparent text-slate-400 grayscale opacity-60'}`}>
-        <CheckCircle2 size={18} className={active ? 'text-secondary' : 'text-slate-300'} />
-        <span className="font-semibold text-sm">{label}</span>
+    <div className={`flex items-center gap-2 p-2.5 rounded-lg border ${active ? 'bg-secondary/5 border-secondary/20 text-primary' : 'bg-transparent border-transparent text-slate-400 grayscale opacity-60'}`}>
+        <CheckCircle2 size={16} className={active ? 'text-secondary' : 'text-slate-300'} />
+        <span className="font-semibold text-xs md:text-sm">{label}</span>
     </div>
 );
 
