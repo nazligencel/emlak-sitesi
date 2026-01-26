@@ -7,72 +7,104 @@ const ListingCard = ({ listing, index }) => {
     // Determine main image
     const displayImage = listing.image || (listing.images && listing.images.length > 0 ? listing.images[0] : 'https://via.placeholder.com/400x300?text=Görsel+Yok');
 
+    // Check if Land
+    const isLand = ['Satılık Arsa', 'Satılık Tarla'].includes(listing.type);
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100"
+            className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-100"
         >
-            <Link to={`/ilan/${slugify(listing.title)}-${listing.id}`} className="block h-full">
-                {/* Image Container */}
-                <div className="relative aspect-[4/3] overflow-hidden">
+            <Link to={`/ilan/${slugify(listing.title)}-${listing.id}`} className="block h-full flex flex-col">
+                {/* Image Container - Compact Aspect Ratio */}
+                <div className="relative aspect-[3/2] overflow-hidden bg-slate-100">
                     <img
                         src={displayImage}
                         alt={listing.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute top-4 left-4 bg-secondary text-black px-3 py-1 rounded-full text-sm font-semibold shadow-lg">
-                        {listing.type}
+
+                    {/* Top Left: Type & Opportunity */}
+                    <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start z-10">
+                        <span className="bg-secondary text-black px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shadow-lg">
+                            {listing.type}
+                        </span>
+                        {listing.is_opportunity && (
+                            <span className="bg-red-600 text-white px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shadow-lg animate-pulse">
+                                Fırsat
+                            </span>
+                        )}
                     </div>
-                    {listing.is_opportunity && (
-                        <div className="absolute top-14 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg animate-pulse z-10">
-                            FIRSAT
-                        </div>
-                    )}
-                    <div className="absolute top-4 right-4 bg-primary/80 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-semibold">
-                        {listing.status}
+
+                    {/* Top Right: Status (Satılık/Kiralık) - Match Detail Style */}
+                    <div className="absolute top-3 right-3 z-10">
+                        <span className="bg-black/60 backdrop-blur-md text-white border border-white/10 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shadow-lg">
+                            {listing.status}
+                        </span>
                     </div>
-                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent h-20 opacity-60" />
+
+                    {/* Gradient Overlay for Text Visibility */}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/50 to-transparent h-16 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 </div>
-                {/* ... rest of logic unchanged ... */}
 
                 {/* Content */}
-                <div className="p-5">
-                    <div className="text-secondary font-bold text-xl mb-1">
-                        {listing.price ? Number(listing.price).toLocaleString('tr-TR') : 0} {{
-                            'USD': '$',
-                            'EUR': '€',
-                            'GBP': '£',
-                            'TL': '₺'
-                        }[listing.currency] || '₺'}
+                <div className="p-4 flex flex-col flex-1">
+                    {/* Price & Location */}
+                    <div className="flex justify-between items-start gap-2 mb-2">
+                        <div className="text-secondary font-bold text-lg leading-tight">
+                            {listing.price ? Number(listing.price).toLocaleString('tr-TR') : 0} {{
+                                'USD': '$',
+                                'EUR': '€',
+                                'GBP': '£',
+                                'TL': '₺'
+                            }[listing.currency] || '₺'}
+                        </div>
                     </div>
-                    <h3 className="text-slate-800 font-bold text-lg mb-2 line-clamp-1 group-hover:text-secondary transition-colors">
+
+                    <h3 className="text-slate-800 font-bold text-sm mb-1 leading-snug line-clamp-2 group-hover:text-secondary transition-colors min-h-[2.5em]">
                         {listing.title}
                     </h3>
 
-                    <div className="flex items-center text-slate-500 mb-4 text-sm">
-                        <MapPin size={16} className="mr-1 text-secondary" />
-                        <span className="line-clamp-1">{listing.location}</span>
+                    <div className="flex items-center text-slate-400 text-xs mb-4 font-medium">
+                        <MapPin size={12} className="mr-1 shrink-0 text-secondary" />
+                        <span className="truncate">{listing.location}</span>
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-slate-100 pt-4 text-slate-600 text-sm gap-2">
-                        <div className="flex items-center gap-1">
-                            <Bed size={16} className="text-slate-400" />
-                            <span>{listing.beds}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <Utensils size={16} className="text-slate-400" />
-                            <span>{listing.kitchen}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <Square size={16} className="text-slate-400" />
-                            <span>{listing.sqm || listing.gross_sqm || '-'} m²</span>
-                        </div>
-                        <div className="flex items-center gap-1 min-w-0">
-                            <Compass size={16} className="text-slate-400 shrink-0" />
-                            <span className="truncate">{listing.facade}</span>
-                        </div>
+                    {/* Stats Grid - Dynamic based on Type */}
+                    <div className="mt-auto pt-3 border-t border-slate-50 flex items-center justify-between text-xs text-slate-500 font-medium">
+                        {isLand ? (
+                            <>
+                                <div className="flex items-center gap-1.5" title="İmar Durumu">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                                    <span className="truncate max-w-[80px]">{listing.zoning_status || '-'}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5" title="Ada/Parsel">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                                    <span className="truncate">{listing.ada_no ? `Ada: ${listing.ada_no}` : '-'}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5" title="Alan">
+                                    <Square size={13} className="text-slate-400" />
+                                    <span>{listing.gross_sqm || '-'} m²</span>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex items-center gap-1.5" title="Oda Sayısı">
+                                    <Bed size={13} className="text-slate-400" />
+                                    <span>{listing.beds || '-'}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5" title="Bina Yaşı">
+                                    <Home size={13} className="text-slate-400" />
+                                    <span>{listing.building_age ? `${listing.building_age} Yıl` : '0'}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5" title="Alan">
+                                    <Square size={13} className="text-slate-400" />
+                                    <span>{listing.gross_sqm || '-'} m²</span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </Link>

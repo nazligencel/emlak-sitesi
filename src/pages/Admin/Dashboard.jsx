@@ -6,6 +6,13 @@ import { Trash2, Edit, Plus, X, Search, Move } from 'lucide-react';
 import { CONSULTANTS } from '../../constants/consultants';
 import { LOCATIONS } from '../../constants/locations';
 
+const ZONING_OPTIONS = ['Bağ & Bahçe', 'Depo & Antrepo', 'Konut', 'Muhtelif', 'Sanayi', 'Sera', 'Sit Alanı', 'Tarla', 'Tarla + Bağ', 'Ticari', 'Ticari + Konut', 'Villa', 'Zeytinlik'];
+const TAPU_OPTIONS = ['Hisseli Tapu', 'Müstakil Tapulu', 'Tapu Kaydı Yok'];
+const INFRASTRUCTURE_OPTIONS = ['Elektrik', 'Sanayi Elektriği', 'Su', 'Telefon', 'Doğalgaz', 'Kanalizasyon', 'Arıtma', 'Sondaj & Kuyu', 'Zemin Etüdü', 'Yolu Açılmış', 'Yolu Açılmamış', 'Yolu Yok'];
+const LOCATION_FEATURES_OPTIONS = ['Anayola Yakın', 'Denize Sıfır', 'Denize Yakın', 'Havaalanına Yakın', 'Toplu Taşımaya Yakın'];
+const GENERAL_FEATURES_OPTIONS = ['İfrazlı', 'Parselli', 'Projeli', 'Köşe Parsel'];
+const VIEW_OPTIONS = ['Şehir', 'Deniz', 'Doğa', 'Boğaz', 'Göl'];
+
 const Dashboard = () => {
     const { listings, addListing, updateListing, deleteListing, uploadImages } = useListings(); // Use uploadImages
     const { logout } = useAuth();
@@ -79,6 +86,20 @@ const Dashboard = () => {
         }));
     };
 
+    const handleMultiSelectCheck = (e, field) => {
+        const { value, checked } = e.target;
+        let currentItems = form[field] ? form[field].split(' - ') : [];
+        if (checked) {
+            currentItems.push(value);
+        } else {
+            currentItems = currentItems.filter(item => item !== value);
+        }
+        setForm(prev => ({
+            ...prev,
+            [field]: currentItems.join(' - ')
+        }));
+    };
+
     // Form state...
     const initialFormState = {
         title: '',
@@ -115,7 +136,17 @@ const Dashboard = () => {
         image: '',
         images: [],
         consultant_id: 1,
-        is_opportunity: false
+        is_opportunity: false,
+        // Land specific fields
+        zoning_status: '',
+        ada_no: '',
+        parsel_no: '',
+        kaks: '',
+        infrastructure: '',
+        location_features: '',
+        general_features: '',
+        view: '',
+        price_per_sqm: '' // Manuel m2 fiyatı
     };
 
     const [form, setForm] = useState(initialFormState);
@@ -299,6 +330,11 @@ const Dashboard = () => {
             };
 
             let result;
+
+            // Validate required fields based on Type
+            const isLand = ['Satılık Arsa', 'Satılık Tarla'].includes(form.type);
+            // Example validation override if needed, but HTML required attribute helps.
+
             if (editingId) {
                 result = await updateListing(editingId, formData);
             } else {
@@ -470,293 +506,482 @@ const Dashboard = () => {
                 <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100">
                     <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Temel Bilgiler */}
-                        <div>
-                            <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">Temel Bilgiler</h3>
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div className="col-span-full">
-                                    <label className="label">İlan Başlığı</label>
-                                    <input type="text" name="title" value={form.title} onChange={handleChange} required className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Fiyat (TL)</label>
+                        {/* Temel Bilgiler - Compact Design */}
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                            <div className="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
+                                <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                <h3 className="text-lg font-bold text-slate-800">Temel Bilgiler</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                                {/* İlan Başlığı */}
+                                <div className="md:col-span-6 space-y-1">
+                                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">İlan Başlığı</label>
                                     <input
                                         type="text"
-                                        name="price"
-                                        value={form.price}
-                                        onChange={handlePriceChange}
+                                        name="title"
+                                        value={form.title}
+                                        onChange={handleChange}
                                         required
-                                        className="input"
-                                        placeholder="0.000"
+                                        className="w-full px-4 h-[46px] rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium text-slate-600 placeholder:text-slate-300"
+                                        placeholder="Örn: Deniz Manzaralı Lüks Villa"
                                     />
                                 </div>
-                                <div>
-                                    <label className="label">Para Birimi</label>
-                                    <select name="currency" value={form.currency} onChange={handleChange} className="input">
-                                        <option value="TL">TL</option>
-                                        <option value="USD">USD</option>
-                                        <option value="EUR">EUR</option>
-                                        <option value="GBP">GBP</option>
-                                    </select>
+
+                                {/* Fiyat Grubu */}
+                                <div className="md:col-span-4 space-y-1">
+                                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Fiyat & Para Birimi</label>
+                                    <div className="flex shadow-sm rounded-xl overflow-hidden border border-slate-200 focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary/10 transition-all bg-white h-[46px] items-center">
+                                        <input
+                                            type="text"
+                                            name="price"
+                                            value={form.price}
+                                            onChange={handlePriceChange}
+                                            required
+                                            className="w-full px-4 h-full outline-none text-sm font-medium text-secondary placeholder:text-slate-200 bg-transparent"
+                                            placeholder="0"
+                                        />
+                                        <div className="bg-slate-50 border-l border-slate-100 flex items-center px-1 h-full">
+                                            <select
+                                                name="currency"
+                                                value={form.currency}
+                                                onChange={handleChange}
+                                                className="bg-transparent text-sm font-medium text-slate-600 outline-none cursor-pointer h-full px-2 hover:text-secondary transition-colors"
+                                            >
+                                                <option value="TL">TL</option>
+                                                <option value="USD">USD</option>
+                                                <option value="EUR">EUR</option>
+                                                <option value="GBP">GBP</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="label">İlan No (Otomatik Atanır)</label>
+
+                                {/* İlan No */}
+                                <div className="md:col-span-2 space-y-1">
+                                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">İlan No</label>
                                     <input
                                         type="text"
                                         name="listing_no"
-                                        value={form.listing_no || (editingId ? '' : 'Otomatik Oluşturulacak')}
-                                        onChange={handleChange}
-                                        className="input bg-slate-100 text-slate-500"
-                                        disabled // Disable manual entry since we auto-gen
+                                        value={form.listing_no || (editingId ? '' : 'Otomatik Atanacak')}
+                                        readOnly
+                                        disabled
+                                        className="w-full px-4 h-[46px] rounded-xl border border-slate-100 bg-slate-50 text-slate-400 text-center text-sm font-medium outline-none cursor-not-allowed"
                                     />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Lokasyon & Özellikler */}
-                        <div>
-                            <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">Lokasyon ve Gayrimenkul Tipi</h3>
-                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div>
-                                    <label className="label">İl</label>
-                                    <select
-                                        value={locCity}
-                                        onChange={(e) => {
-                                            setLocCity(e.target.value);
-                                            setLocDistrict('');
-                                            setLocNeighborhood('');
-                                        }}
-                                        className="input mb-4"
-                                    >
-                                        <option value="">İl Seçiniz</option>
-                                        {Object.keys(LOCATIONS).map(city => (
-                                            <option key={city} value={city}>{city}</option>
-                                        ))}
-                                    </select>
-
-                                    <label className="label">İlçe</label>
-                                    <select
-                                        value={locDistrict}
-                                        onChange={(e) => {
-                                            setLocDistrict(e.target.value);
-                                            setLocNeighborhood('');
-                                        }}
-                                        disabled={!locCity}
-                                        className="input mb-4"
-                                    >
-                                        <option value="">İlçe Seçiniz</option>
-                                        {locCity && LOCATIONS[locCity] && Object.keys(LOCATIONS[locCity]).map(dist => (
-                                            <option key={dist} value={dist}>{dist}</option>
-                                        ))}
-                                    </select>
-
-                                    <label className="label">Mahalle</label>
-                                    <input
-                                        type="text"
-                                        value={locNeighborhood}
-                                        onChange={(e) => setLocNeighborhood(e.target.value)}
-                                        className="input"
-                                        placeholder="Mahalle giriniz"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="label">İlan Sorumlusu (Danışman)</label>
-                                    <select
-                                        name="consultant_id"
-                                        value={form.consultant_id}
-                                        onChange={handleChange}
-                                        className="input"
-                                    >
-                                        {CONSULTANTS.filter(c => c.name !== "Mesut TOPCU").map(c => (
-                                            <option key={c.id} value={c.id}>{c.name} ({c.role})</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="label">Emlak Tipi</label>
-                                    <select name="type" value={form.type} onChange={handleChange} className="input">
-                                        <option value="Daire">Daire</option>
-                                        <option value="Villa">Villa</option>
-                                        <option value="Rezidans">Rezidans</option>
-                                        <option value="Dükkan">Dükkan</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="label">Durum</label>
-                                    <select name="status" value={form.status} onChange={handleChange} className="input">
-                                        <option value="Satılık">Satılık</option>
-                                        <option value="Kiralık">Kiralık</option>
-                                        <option value="Devren Satılık">Devren Satılık</option>
-                                        <option value="Devren Kiralık">Devren Kiralık</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="label">Kullanım Durumu</label>
-                                    <select name="usage_status" value={form.usage_status} onChange={handleChange} className="input">
-                                        <option value="Boş">Boş</option>
-                                        <option value="Kiracılı">Kiracılı</option>
-                                        <option value="Mülk Sahibi">Mülk Sahibi</option>
-                                    </select>
-                                </div>
+                        {/* Lokasyon ve Gayrimenkul Tipi - Compact Design */}
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                            <div className="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
+                                <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                <h3 className="text-lg font-bold text-slate-800">Lokasyon ve Detaylar</h3>
                             </div>
-                        </div>
 
-
-                        {/* Açıklama */}
-                        <div>
-                            <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">İlan Açıklaması</h3>
-                            <div className="grid md:grid-cols-1 gap-6">
-                                <div>
-                                    <label className="label">Açıklama (Detaylı Bilgi)</label>
-                                    <textarea
-                                        name="description"
-                                        value={form.description}
-                                        onChange={handleChange}
-                                        rows="5"
-                                        className="input resize-y"
-                                        placeholder="İlan hakkında detaylı bilgi giriniz..."
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Detaylar */}
-                        <div>
-                            <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">Gayrimenkul Detayları</h3>
-                            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                                <div>
-                                    <label className="label">Net Metrekare (m²)</label>
-                                    <input type="number" name="net_sqm" value={form.net_sqm} onChange={handleChange} required className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Brüt Metrekare (m²)</label>
-                                    <input type="number" name="gross_sqm" value={form.gross_sqm} onChange={handleChange} required className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Oda Sayısı</label>
-                                    <input type="text" name="beds" value={form.beds} onChange={handleChange} className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Banyo Sayısı</label>
-                                    <input type="number" name="baths" value={form.baths} onChange={handleChange} className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Bina Yaşı</label>
-                                    <input type="number" name="building_age" value={form.building_age} onChange={handleChange} className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Bulunduğu Kat</label>
-                                    <input type="text" name="floor_location" value={form.floor_location} onChange={handleChange} className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Kat Sayısı</label>
-                                    <input type="number" name="total_floors" value={form.total_floors} onChange={handleChange} className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Isıtma</label>
-                                    <select name="heating" value={form.heating} onChange={handleChange} className="input">
-                                        <option value="Doğalgaz">Doğalgaz</option>
-                                        <option value="Kombi">Kombi</option>
-                                        <option value="Merkezi">Merkezi</option>
-                                        <option value="Yerden Isıtma">Yerden Isıtma</option>
-                                        <option value="Klima">Klima</option>
-                                        <option value="Yok">Yok</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="label">Aidat (TL)</label>
-                                    <input type="number" name="dues" value={form.dues} onChange={handleChange} className="input" />
-                                </div>
-                                <div>
-                                    <label className="label">Mutfak Tipi</label>
-                                    <select name="kitchen" value={form.kitchen} onChange={handleChange} className="input">
-                                        <option value="Kapalı">Kapalı</option>
-                                        <option value="Açık">Açık</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="label">Tapu Durumu</label>
-                                    <input type="text" name="tapu_status" value={form.tapu_status} onChange={handleChange} className="input" placeholder="Örn: Hisseli, Müstakil" />
-                                </div>
-                                <div>
-                                    <label className="label">Otopark Durumu</label>
-                                    <select name="parking" value={form.parking} onChange={handleChange} className="input">
-                                        <option value="Yok">Yok</option>
-                                        <option value="Açık">Açık</option>
-                                        <option value="Kapalı">Kapalı</option>
-                                        <option value="Açık & Kapalı">Açık & Kapalı</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="label">Cephe</label>
-                                    <div className="grid grid-cols-2 gap-2 bg-white p-3 border border-slate-200 rounded-lg">
-                                        {['Kuzey', 'Güney', 'Doğu', 'Batı'].map(facadeOption => (
-                                            <label key={facadeOption} className="flex items-center gap-2 cursor-pointer text-sm text-slate-600 hover:text-primary">
-                                                <input
-                                                    type="checkbox"
-                                                    value={facadeOption}
-                                                    checked={form.facade?.split(' - ').includes(facadeOption)}
-                                                    onChange={handleFacadeChange}
-                                                    className="w-4 h-4 text-secondary rounded focus:ring-secondary border-slate-300"
-                                                />
-                                                <span>{facadeOption}</span>
-                                            </label>
-                                        ))}
+                            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                                {/* Location Group */}
+                                <div className="md:col-span-4 space-y-3">
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">İl</label>
+                                        <select
+                                            value={locCity}
+                                            onChange={(e) => {
+                                                setLocCity(e.target.value);
+                                                setLocDistrict('');
+                                                setLocNeighborhood('');
+                                            }}
+                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium"
+                                        >
+                                            <option value="">İl Seçiniz</option>
+                                            {Object.keys(LOCATIONS).map(city => (
+                                                <option key={city} value={city}>{city}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">İlçe</label>
+                                        <select
+                                            value={locDistrict}
+                                            onChange={(e) => {
+                                                setLocDistrict(e.target.value);
+                                                setLocNeighborhood('');
+                                            }}
+                                            disabled={!locCity}
+                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium"
+                                        >
+                                            <option value="">İlçe Seçiniz</option>
+                                            {locCity && LOCATIONS[locCity] && Object.keys(LOCATIONS[locCity]).map(dist => (
+                                                <option key={dist} value={dist}>{dist}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Mahalle</label>
+                                        <input
+                                            type="text"
+                                            value={locNeighborhood}
+                                            onChange={(e) => setLocNeighborhood(e.target.value)}
+                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium placeholder:text-slate-300"
+                                            placeholder="Mahalle giriniz"
+                                        />
                                     </div>
                                 </div>
-                                <div>
-                                    <label className="label">Depozito</label>
-                                    <input type="number" name="deposit" value={form.deposit} onChange={handleChange} className="input" />
+
+                                {/* Property Details Group */}
+                                <div className="md:col-span-8 grid grid-cols-2 gap-4 h-fit">
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">İlan Sorumlusu</label>
+                                        <select
+                                            name="consultant_id"
+                                            value={form.consultant_id}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium"
+                                        >
+                                            {CONSULTANTS.filter(c => c.name !== "Mesut TOPCU").map(c => (
+                                                <option key={c.id} value={c.id}>{c.name} ({c.role})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Emlak Tipi</label>
+                                        <select name="type" value={form.type} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium">
+                                            <option value="Daire">Daire</option>
+                                            <option value="Villa">Villa</option>
+                                            <option value="Rezidans">Rezidans</option>
+                                            <option value="Dükkan">Dükkan</option>
+                                            <option value="Satılık Arsa">Satılık Arsa</option>
+                                            <option value="Satılık Tarla">Satılık Tarla</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Durum</label>
+                                        <select name="status" value={form.status} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium">
+                                            <option value="Satılık">Satılık</option>
+                                            <option value="Kiralık">Kiralık</option>
+                                            <option value="Devren Satılık">Devren Satılık</option>
+                                            <option value="Devren Kiralık">Devren Kiralık</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Kullanım Durumu</label>
+                                        <select name="usage_status" value={form.usage_status} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium">
+                                            <option value="Boş">Boş</option>
+                                            <option value="Kiracılı">Kiracılı</option>
+                                            <option value="Mülk Sahibi">Mülk Sahibi</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Ek Özellikler (Checkbox) */}
-                        <div>
-                            <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">Özellikler</h3>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="balcony" checked={form.balcony} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
-                                    <span>Balkon</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="elevator" checked={form.elevator} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
-                                    <span>Asansör</span>
-                                </label>
 
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="furnished" checked={form.furnished} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
-                                    <span>Eşyalı</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="in_complex" checked={form.in_complex} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
-                                    <span>Site İçerisinde</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="loan_eligible" checked={form.loan_eligible} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
-                                    <span>Krediye Uygun</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" name="swap" checked={form.swap} onChange={handleChange} className="w-5 h-5 text-secondary rounded focus:ring-secondary" />
-                                    <span>Takas</span>
-                                </label>
-                                <label className="flex items-center gap-2 cursor-pointer bg-yellow-50 p-2 rounded-lg border border-yellow-200">
-                                    <input type="checkbox" name="is_opportunity" checked={form.is_opportunity} onChange={handleChange} className="w-5 h-5 text-yellow-600 rounded focus:ring-yellow-500" />
-                                    <span className="font-bold text-yellow-700">Fırsat İlanı</span>
-                                </label>
+                        {/* Açıklama - Compact Design */}
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                            <div className="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
+                                <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                <h3 className="text-lg font-bold text-slate-800">İlan Açıklaması</h3>
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Açıklama</label>
+                                <textarea
+                                    name="description"
+                                    value={form.description}
+                                    onChange={handleChange}
+                                    rows="4"
+                                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all font-medium text-slate-600 placeholder:text-slate-300 resize-y min-h-[100px]"
+                                    placeholder="İlan hakkında dikkat çekici detayları buraya yazınız..."
+                                ></textarea>
                             </div>
                         </div>
 
-                        {/* Görsel */}
-                        <div>
-                            <h3 className="text-lg font-bold text-primary mb-4 border-b pb-2">Görseller</h3>
+
+                        {['Satılık Arsa', 'Satılık Tarla'].includes(form.type) ? (
+                            // -------------------------
+                            // LAND / FIELD FORM FIELDS
+                            // -------------------------
+                            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                                <div className="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
+                                    <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                    <h3 className="text-lg font-bold text-slate-800">Arsa/Tarla Detayları & Özellikler</h3>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">İmar Durumu</label>
+                                        <input type="text" name="zoning_status" value={form.zoning_status} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Tapu Durumu</label>
+                                        <input type="text" name="tapu_status" value={form.tapu_status} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Takas</label>
+                                        <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all h-[42px]">
+                                            <input type="checkbox" name="swap" checked={form.swap} onChange={handleChange} className="w-4 h-4 text-secondary rounded focus:ring-secondary border-slate-300" />
+                                            <span className="text-sm font-medium text-slate-600">Takas Yapılabilir</span>
+                                        </label>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Fırsat İlanı</label>
+                                        <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all h-[42px]">
+                                            <input type="checkbox" name="is_opportunity" checked={form.is_opportunity} onChange={handleChange} className="w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500 border-yellow-400" />
+                                            <span className="text-sm font-bold text-yellow-700">Fırsat İlanı</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">m² (Alanı)</label>
+                                        <input type="number" name="gross_sqm" value={form.gross_sqm} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" placeholder="0" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">m² Fiyatı</label>
+                                        <input type="text" name="price_per_sqm" value={form.price_per_sqm} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" placeholder="Manuel" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Ada No</label>
+                                        <input type="text" name="ada_no" value={form.ada_no} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Parsel No</label>
+                                        <input type="text" name="parsel_no" value={form.parsel_no} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Kaks (Emsal)</label>
+                                        <input type="text" name="kaks" value={form.kaks} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6 pt-4 border-t border-slate-50">
+                                    {/* Altyapı */}
+                                    <div>
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Altyapı</label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                                            {INFRASTRUCTURE_OPTIONS.map(opt => (
+                                                <label key={opt} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={opt}
+                                                        checked={form.infrastructure?.split(' - ').includes(opt)}
+                                                        onChange={(e) => handleMultiSelectCheck(e, 'infrastructure')}
+                                                        className="w-4 h-4 text-secondary rounded focus:ring-secondary border-slate-300"
+                                                    />
+                                                    <span className="text-sm text-slate-600 font-medium">{opt}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Konum */}
+                                    <div>
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Konum</label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                                            {LOCATION_FEATURES_OPTIONS.map(opt => (
+                                                <label key={opt} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={opt}
+                                                        checked={form.location_features?.split(' - ').includes(opt)}
+                                                        onChange={(e) => handleMultiSelectCheck(e, 'location_features')}
+                                                        className="w-4 h-4 text-secondary rounded focus:ring-secondary border-slate-300"
+                                                    />
+                                                    <span className="text-sm text-slate-600 font-medium">{opt}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Genel Özellikler */}
+                                    <div>
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Genel Özellikler</label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                                            {GENERAL_FEATURES_OPTIONS.map(opt => (
+                                                <label key={opt} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={opt}
+                                                        checked={form.general_features?.split(' - ').includes(opt)}
+                                                        onChange={(e) => handleMultiSelectCheck(e, 'general_features')}
+                                                        className="w-4 h-4 text-secondary rounded focus:ring-secondary border-slate-300"
+                                                    />
+                                                    <span className="text-sm text-slate-600 font-medium">{opt}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Manzara */}
+                                    <div>
+                                        <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Manzara</label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                                            {VIEW_OPTIONS.map(opt => (
+                                                <label key={opt} className="flex items-center gap-2 cursor-pointer p-2 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={opt}
+                                                        checked={form.view?.split(' - ').includes(opt)}
+                                                        onChange={(e) => handleMultiSelectCheck(e, 'view')}
+                                                        className="w-4 h-4 text-secondary rounded focus:ring-secondary border-slate-300"
+                                                    />
+                                                    <span className="text-sm text-slate-600 font-medium">{opt}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            // -------------------------
+                            // STANDARD BUILDING FORM
+                            // -------------------------
+                            <>
+                                {/* Gayrimenkul Detayları - Compact Design */}
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                                    <div className="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
+                                        <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                        <h3 className="text-lg font-bold text-slate-800">Bina/Daire Detayları</h3>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Net m²</label>
+                                            <input type="number" name="net_sqm" value={form.net_sqm} onChange={handleChange} required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Brüt m²</label>
+                                            <input type="number" name="gross_sqm" value={form.gross_sqm} onChange={handleChange} required className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Oda</label>
+                                            <input type="text" name="beds" value={form.beds} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Banyo</label>
+                                            <input type="number" name="baths" value={form.baths} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Isıtma</label>
+                                            <select name="heating" value={form.heating} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium">
+                                                <option value="Doğalgaz">Doğalgaz</option>
+                                                <option value="Kombi">Kombi</option>
+                                                <option value="Merkezi">Merkezi</option>
+                                                <option value="Yerden Isıtma">Yerden Isıtma</option>
+                                                <option value="Klima">Klima</option>
+                                                <option value="Yok">Yok</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Bina Yaşı</label>
+                                            <input type="number" name="building_age" value={form.building_age} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Bulunduğu Kat</label>
+                                            <input type="text" name="floor_location" value={form.floor_location} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Kat Sayısı</label>
+                                            <input type="number" name="total_floors" value={form.total_floors} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Aidat (TL)</label>
+                                            <input type="number" name="dues" value={form.dues} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Mutfak</label>
+                                            <select name="kitchen" value={form.kitchen} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium">
+                                                <option value="Kapalı">Kapalı</option>
+                                                <option value="Açık">Açık</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Tapu (Örn: Hisseli)</label>
+                                            <input type="text" name="tapu_status" value={form.tapu_status} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Otopark</label>
+                                            <select name="parking" value={form.parking} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium">
+                                                <option value="Yok">Yok</option>
+                                                <option value="Açık">Açık</option>
+                                                <option value="Kapalı">Kapalı</option>
+                                                <option value="Açık & Kapalı">Açık & Kapalı</option>
+                                            </select>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Depozito</label>
+                                            <input type="number" name="deposit" value={form.deposit} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                        </div>
+
+                                        {/* Cephe */}
+                                        <div className="col-span-2 md:col-span-4 lg:col-span-6 space-y-1">
+                                            <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Cephe</label>
+                                            <div className="flex flex-wrap gap-4 bg-white p-3 rounded-xl border border-slate-200">
+                                                {['Kuzey', 'Güney', 'Doğu', 'Batı'].map(facadeOption => (
+                                                    <label key={facadeOption} className="flex items-center gap-2 cursor-pointer hover:bg-slate-50 px-3 py-1.5 rounded-lg transition-colors">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={facadeOption}
+                                                            checked={form.facade?.split(' - ').includes(facadeOption)}
+                                                            onChange={handleFacadeChange}
+                                                            className="w-4 h-4 text-secondary rounded focus:ring-secondary border-slate-300"
+                                                        />
+                                                        <span className="text-sm font-medium text-slate-700">{facadeOption}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Ek Özellikler (Checkbox) - Compact Design */}
+                                <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                                    <div className="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
+                                        <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                        <h3 className="text-lg font-bold text-slate-800">Ek Özellikler</h3>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
+                                        {[
+                                            { key: 'balcony', label: 'Balkon' },
+                                            { key: 'elevator', label: 'Asansör' },
+                                            { key: 'furnished', label: 'Eşyalı' },
+                                            { key: 'in_complex', label: 'Site İçerisinde' },
+                                            { key: 'loan_eligible', label: 'Krediye Uygun' },
+                                            { key: 'swap', label: 'Takas' },
+                                        ].map(item => (
+                                            <label key={item.key} className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-200 transition-all">
+                                                <input type="checkbox" name={item.key} checked={form[item.key]} onChange={handleChange} className="w-4 h-4 text-secondary rounded focus:ring-secondary border-slate-300" />
+                                                <span className="text-sm font-medium text-slate-600">{item.label}</span>
+                                            </label>
+                                        ))}
+
+                                        <label className="flex items-center gap-2 cursor-pointer p-2.5 rounded-xl border border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-all">
+                                            <input type="checkbox" name="is_opportunity" checked={form.is_opportunity} onChange={handleChange} className="w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500 border-yellow-400" />
+                                            <span className="text-sm font-bold text-yellow-700">Fırsat İlanı</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Görsel - Compact Design */}
+                        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                            <div className="flex items-center gap-2 mb-4 border-b border-slate-50 pb-2">
+                                <div className="w-1.5 h-6 bg-secondary rounded-full"></div>
+                                <h3 className="text-lg font-bold text-slate-800">İlan Görselleri</h3>
+                            </div>
+
                             <div className="col-span-full">
-                                <div className="flex items-center gap-4 mb-4">
+                                <div className="flex flex-col md:flex-row items-start md:items-center gap-4 mb-4">
                                     <label
                                         htmlFor="file-upload"
-                                        className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors border border-dashed border-slate-300"
+                                        className="cursor-pointer bg-slate-50 hover:bg-slate-100 text-slate-700 px-6 py-4 rounded-xl font-bold flex items-center gap-3 transition-colors border-2 border-dashed border-slate-200 w-full md:w-auto hover:border-secondary hover:text-secondary group"
                                     >
-                                        <Plus size={20} />
-                                        <span>Fotoğraf Ekle</span>
+                                        <div className="bg-white p-2 rounded-full shadow-sm group-hover:scale-110 transition-transform">
+                                            <Plus size={20} className="text-slate-400 group-hover:text-secondary" />
+                                        </div>
+                                        <span>Yeni Fotoğraf Ekle</span>
                                     </label>
                                     <input
                                         id="file-upload"
@@ -766,9 +991,10 @@ const Dashboard = () => {
                                         onChange={handleFileChange}
                                         className="hidden"
                                     />
-                                    <span className="text-sm text-slate-500">
-                                        {displayImages.length} Resim Seçili (Sürükle bırak ile sıralayabilirsiniz)
-                                    </span>
+                                    <div className="text-xs text-slate-400 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100">
+                                        <span className="font-bold text-slate-600 block mb-0.5">{displayImages.length} Resim Seçildi</span>
+                                        Sıralamak için sürükleyip bırakabilirsiniz.
+                                    </div>
                                 </div>
 
                                 {uploading && <p className="text-sm text-yellow-600 mb-2 font-bold animate-pulse">Resimler yükleniyor ve ilan oluşturuluyor...</p>}
@@ -777,7 +1003,7 @@ const Dashboard = () => {
                                     {displayImages.map((img, index) => (
                                         <div
                                             key={img.id}
-                                            className="relative group aspect-square cursor-grab active:cursor-grabbing"
+                                            className="relative group aspect-[4/3] cursor-grab active:cursor-grabbing"
                                             draggable
                                             onDragStart={(e) => {
                                                 dragItem.current = index;
@@ -792,30 +1018,30 @@ const Dashboard = () => {
                                             <img
                                                 src={img.url}
                                                 alt={`Görsel ${index}`}
-                                                className={`w-full h-full object-cover rounded-lg shadow-sm border-2 ${img.type === 'new' ? 'border-secondary' : 'border-slate-200'}`}
+                                                className={`w-full h-full object-cover rounded-xl shadow-sm border-2 transition-all ${img.type === 'new' ? 'border-secondary' : 'border-slate-100 group-hover:border-slate-300'}`}
                                             />
 
                                             {/* Order Badge */}
-                                            <div className="absolute top-2 left-2 bg-black/60 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold backdrop-blur-sm pointer-events-none">
+                                            <div className="absolute top-2 left-2 bg-black/60 text-white w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold backdrop-blur-sm pointer-events-none border border-white/20">
                                                 {index + 1}
                                             </div>
 
                                             {/* Drag Handle Icon (Visual Cue) */}
-                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 group-hover:opacity-70 pointer-events-none drop-shadow-lg">
+                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0 group-hover:opacity-100 pointer-events-none drop-shadow-lg transition-opacity">
                                                 <Move size={32} />
                                             </div>
 
                                             <button
                                                 type="button"
                                                 onClick={() => handleRemoveImage(img.id)}
-                                                className="absolute top-2 right-2 bg-red-600 text-white p-1.5 rounded-full opacity-100 shadow-md hover:bg-red-700 z-10"
+                                                className="absolute top-2 right-2 bg-white/90 text-red-500 hover:text-red-700 p-1.5 rounded-full opacity-0 group-hover:opacity-100 shadow-sm hover:scale-110 transition-all z-10"
                                                 title="Resmi Kaldır"
                                             >
-                                                <X size={14} />
+                                                <X size={16} />
                                             </button>
 
-                                            <span className={`absolute bottom-2 left-2 text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm ${img.type === 'new' ? 'bg-secondary text-black' : 'bg-black/60 text-white'}`}>
-                                                {img.type === 'new' ? 'Yeni' : 'Mevcut'}
+                                            <span className={`absolute bottom-2 left-2 text-[10px] px-2 py-0.5 rounded font-bold backdrop-blur-sm shadow-sm ${img.type === 'new' ? 'bg-secondary text-black' : 'bg-black/60 text-white border border-white/20'}`}>
+                                                {img.type === 'new' ? 'YENİ' : 'MEVCUT'}
                                             </span>
                                         </div>
                                     ))}

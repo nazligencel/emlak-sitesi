@@ -60,7 +60,7 @@ const Hero = () => {
                     className="bg-white/10 backdrop-blur-md p-4 rounded-2xl md:rounded-full border border-white/20 shadow-2xl max-w-4xl mx-auto flex flex-col md:flex-row gap-4 relative z-30"
                 >
                     {/* City Selector */}
-                    <div className="relative min-w-[180px]">
+                    <div className="relative w-full md:w-[28%]">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-secondary">
                             <MapPin size={20} />
                         </div>
@@ -83,7 +83,7 @@ const Hero = () => {
                     </div>
 
                     {/* District Selector */}
-                    <div className="relative flex-1 min-w-[180px]">
+                    <div className="relative flex-1 min-w-[150px]">
                         <select
                             className="w-full bg-white/90 text-slate-800 px-6 py-3.5 rounded-full outline-none focus:ring-2 focus:ring-secondary appearance-none cursor-pointer font-medium disabled:opacity-70 disabled:cursor-not-allowed"
                             value={selectedDistrict}
