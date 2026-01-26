@@ -1,4 +1,4 @@
-import { MapPin, Bed, Square, Home, Compass, Utensils } from 'lucide-react';
+import { MapPin, Bed, Square, Home, Compass, Utensils, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { slugify } from '../lib/utils';
@@ -80,28 +80,34 @@ const ListingCard = ({ listing, index }) => {
                                     <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
                                     <span className="truncate max-w-[80px]">{listing.zoning_status || '-'}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5" title="Ada/Parsel">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
-                                    <span className="truncate">{listing.ada_no ? `Ada: ${listing.ada_no}` : '-'}</span>
-                                </div>
                                 <div className="flex items-center gap-1.5" title="Alan">
                                     <Square size={13} className="text-slate-400" />
                                     <span>{listing.gross_sqm || '-'} m²</span>
+                                </div>
+                                <div className="flex items-center gap-1.5" title="Emsal">
+                                    <FileText size={13} className="text-slate-400" />
+                                    <span>{listing.kaks ? `E:${listing.kaks}` : '-'}</span>
                                 </div>
                             </>
                         ) : (
                             <>
+                                <div className="flex items-center gap-1.5" title="Brüt Alan">
+                                    <Square size={13} className="text-slate-400" />
+                                    <span>{listing.gross_sqm || '-'} m²</span>
+                                </div>
                                 <div className="flex items-center gap-1.5" title="Oda Sayısı">
                                     <Bed size={13} className="text-slate-400" />
                                     <span>{listing.beds || '-'}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5" title="Bina Yaşı">
-                                    <Home size={13} className="text-slate-400" />
-                                    <span>{listing.building_age ? `${listing.building_age} Yıl` : '0'}</span>
+                                <div className="flex items-center gap-1.5" title="Mutfak">
+                                    <Utensils size={13} className="text-slate-400" />
+                                    <span>{listing.kitchen || '-'}</span>
                                 </div>
-                                <div className="flex items-center gap-1.5" title="Alan">
-                                    <Square size={13} className="text-slate-400" />
-                                    <span>{listing.gross_sqm || '-'} m²</span>
+                                <div className="flex items-center gap-1.5" title="Cephe">
+                                    <Compass size={13} className="text-slate-400" />
+                                    <span className="truncate max-w-[80px]">
+                                        {listing.facade ? (listing.facade.split(' - ').length > 2 ? 'Çoklu' : listing.facade) : '-'}
+                                    </span>
                                 </div>
                             </>
                         )}

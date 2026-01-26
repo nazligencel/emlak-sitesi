@@ -381,7 +381,7 @@ const Dashboard = () => {
 
     if (view === 'list') {
         return (
-            <div className="min-h-screen bg-slate-50 pt-24 pb-20">
+            <div className="min-h-screen bg-slate-100 pt-24 pb-20">
                 <div className="container mx-auto px-6">
                     <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                         <h1 className="text-3xl font-bold text-primary whitespace-nowrap w-full md:w-auto text-center md:text-left">İlan Yönetimi</h1>
@@ -429,11 +429,11 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div className="bg-[#fafafa] rounded-xl shadow-lg overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-100 text-slate-600 font-semibold border-b border-slate-200">
+                                    <tr className="bg-slate-200 text-slate-700 font-semibold border-b border-slate-300">
                                         <th className="p-4 whitespace-nowrap">Resim</th>
                                         <th className="p-4 whitespace-nowrap">İlan No</th>
                                         <th className="p-4 whitespace-nowrap">Başlık</th>
@@ -489,7 +489,7 @@ const Dashboard = () => {
     } // End of List View
 
     return (
-        <div className="min-h-screen bg-slate-50 pt-24 pb-20">
+        <div className="min-h-screen bg-slate-100 pt-24 pb-20">
             <div className="container mx-auto px-6">
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-3xl font-bold text-primary">
@@ -503,7 +503,7 @@ const Dashboard = () => {
                     </button>
                 </div>
 
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-slate-100">
+                <div className="bg-[#fafafa] p-8 rounded-xl shadow-lg border border-slate-200">
                     <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Temel Bilgiler */}
                         {/* Temel Bilgiler - Compact Design */}
@@ -538,7 +538,7 @@ const Dashboard = () => {
                                             value={form.price}
                                             onChange={handlePriceChange}
                                             required
-                                            className="w-full px-4 h-full outline-none text-sm font-medium text-secondary placeholder:text-slate-200 bg-transparent"
+                                            className="w-full px-4 h-full outline-none text-sm font-medium text-slate-900 placeholder:text-slate-200 bg-transparent"
                                             placeholder="0"
                                         />
                                         <div className="bg-slate-50 border-l border-slate-100 flex items-center px-1 h-full">

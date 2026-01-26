@@ -196,7 +196,7 @@ const ListingDetail = () => {
                         )}
 
                         {/* Title & Price Overlay - Compact */}
-                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-white z-10 pointer-events-none">
+                        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 text-slate-100 z-10 pointer-events-none">
                             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                                 <div>
                                     <div className="flex gap-2 mb-2">
@@ -212,7 +212,7 @@ const ListingDetail = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <h1 className="text-xl md:text-3xl font-bold mb-1 leading-tight text-white/95 shadow-lg line-clamp-2 md:line-clamp-none max-w-3xl">
+                                    <h1 className="text-xl md:text-3xl font-bold mb-1 leading-tight text-slate-50 shadow-lg line-clamp-2 md:line-clamp-none max-w-3xl">
                                         {listing.title}
                                     </h1>
                                     <div className="flex items-center gap-1.5 text-slate-300 text-sm font-medium">
@@ -290,7 +290,7 @@ const ListingDetail = () => {
                                             Genel Bilgiler
                                         </h3>
                                         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                                            <div className="flex flex-col px-5">
+                                            <div className="flex flex-col px-6 md:px-10 py-4">
                                                 <DetailRow label="İlan No" value={listing.listing_no || `#${listing.id}`} />
                                                 <DetailRow label="Emlak Tipi" value={listing.type} />
                                                 <DetailRow label="Tapu Durumu" value={listing.tapu_status || '-'} />

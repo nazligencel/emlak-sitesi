@@ -30,9 +30,12 @@ const Navbar = () => {
         >
             <div className="w-full px-6 md:px-12 flex items-center justify-between">
                 {/* Logo */}
-                <Link to="/" className="flex items-center gap-3 group">
-                    <img src="/logo.png" alt="Topcu Logo" className="h-14 w-auto object-contain transition-transform group-hover:scale-105" />
-                    <span className="text-base md:text-lg font-bold text-white tracking-tight leading-none translate-y-2">
+                <Link to="/" className="flex items-center gap-2 md:gap-3 group">
+                    <img src="/logo.png" alt="Topcu Logo" className="h-11 md:h-14 w-auto object-contain transition-transform group-hover:scale-105" />
+                    <span
+                        className="text-sm md:text-2xl font-bold text-slate-100 tracking-tight leading-none translate-y-0.5 md:translate-y-2"
+                        style={{ fontFamily: "'Montserrat', sans-serif" }}
+                    >
                         Topcu İnşaat & Gayrimenkul
                     </span>
                 </Link>
@@ -59,7 +62,7 @@ const Navbar = () => {
 
                 {/* Mobile Toggle */}
                 <button
-                    className="md:hidden text-white"
+                    className="md:hidden text-slate-100"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
                     {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}

@@ -35,19 +35,19 @@ const Listings = () => {
         <div className="pt-32 pb-20 bg-primary min-h-screen">
             <div className="container mx-auto px-6">
                 <div className="flex flex-col gap-6 mb-12">
-                    <h1 className="text-4xl font-bold text-white border-l-8 border-secondary pl-4">Tüm İlanlar</h1>
+                    <h1 className="text-3xl font-bold text-slate-100 border-l-8 border-secondary pl-4">Tüm İlanlar</h1>
 
                     {/* Filter/Search - Aligned Left */}
-                    <div className="w-full max-w-xl">
+                    <div className="w-full max-w-md">
                         <div className="relative">
                             <input
                                 type="text"
-                                placeholder="İlan No, Konum veya Başlık ile arama yapın..."
+                                placeholder="İlan ara..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-700 bg-slate-800/50 text-white placeholder-slate-400 focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-all"
+                                className="w-full pl-10 pr-4 py-2.5 rounded-full border border-slate-700/50 bg-slate-800/30 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-secondary/50 focus:bg-slate-800/50 transition-all"
                             />
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
                         </div>
                     </div>
                 </div>

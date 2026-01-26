@@ -25,7 +25,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Outfit', 'sans-serif'],
+        sans: ['Open Sans', 'sans-serif'],
+        heading: ['Montserrat', 'sans-serif'],
       },
     },
   },
