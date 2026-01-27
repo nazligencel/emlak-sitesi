@@ -318,15 +318,6 @@ const Dashboard = () => {
                 listing_no: finalListingNo,
                 images: finalImages,
                 image: mainImage,
-                price: form.price ? form.price.toString().replace(/\./g, '') : null,
-                net_sqm: sanitizeNumeric(form.net_sqm),
-                gross_sqm: sanitizeNumeric(form.gross_sqm),
-                baths: sanitizeNumeric(form.baths),
-                building_age: sanitizeNumeric(form.building_age),
-                total_floors: sanitizeNumeric(form.total_floors),
-                dues: sanitizeNumeric(form.dues),
-                deposit: sanitizeNumeric(form.deposit),
-                consultant_id: parseInt(form.consultant_id)
             };
 
             let result;
@@ -874,7 +865,7 @@ const Dashboard = () => {
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Bina Yaşı</label>
-                                            <input type="number" name="building_age" value={form.building_age} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" />
+                                            <input type="text" name="building_age" value={form.building_age} onChange={handleChange} className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-all text-sm font-medium" placeholder="0 (Yeni)" />
                                         </div>
                                         <div className="space-y-1">
                                             <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-1">Bulunduğu Kat</label>

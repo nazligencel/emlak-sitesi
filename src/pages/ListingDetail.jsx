@@ -113,7 +113,7 @@ const ListingDetail = () => {
                             onClick={async () => {
                                 const shareData = {
                                     title: listing.title,
-                                    text: `${listing.title} - ${listing.price} TL #TopcuInsaat`,
+                                    text: `${listing.title} - ${listing.price} TL #TopcuInsaatGayrimenkul`,
                                     url: window.location.href,
                                 };
                                 try {
@@ -168,10 +168,9 @@ const ListingDetail = () => {
                             />
                         </AnimatePresence>
 
-                        {/* Watermark - Smaller */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 opacity-20 md:opacity-30 select-none overflow-hidden">
-                            <div className="text-white text-3xl md:text-6xl font-bold -rotate-12 whitespace-nowrap drop-shadow-lg opacity-50">
-                                TOPCU
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 opacity-10 md:opacity-20 select-none overflow-hidden">
+                            <div className="text-white text-xl md:text-3xl font-bold -rotate-12 whitespace-nowrap drop-shadow-lg">
+                                TOPCU İNŞAAT & GAYRİMENKUL
                             </div>
                         </div>
 
@@ -309,7 +308,7 @@ const ListingDetail = () => {
                                                 ) : (
                                                     // Building Specific Details
                                                     <>
-                                                        <DetailRow label="Bina Yaşı" value={listing.building_age || 'Sıfır'} />
+                                                        <DetailRow label="Bina Yaşı" value={listing.building_age === 0 || listing.building_age === '0' ? '0 (Yeni)' : (listing.building_age || 'Yeni')} />
                                                         <DetailRow label="Kat Sayısı" value={listing.total_floors || '-'} />
                                                         <DetailRow label="Bulunduğu Kat" value={listing.floor_location || '-'} />
                                                         <DetailRow label="Isıtma" value={listing.heating || '-'} />
@@ -499,9 +498,9 @@ const ListingDetail = () => {
                         </div>
 
                         {/* Watermark in Lightbox (Fixed Overlay) */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[65] opacity-[0.15] select-none overflow-hidden">
-                            <div className="text-white text-5xl md:text-9xl font-bold -rotate-12 whitespace-nowrap drop-shadow-2xl">
-                                TOPCU
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[65] opacity-[0.1] select-none overflow-hidden">
+                            <div className="text-white text-2xl md:text-5xl font-bold -rotate-12 whitespace-nowrap drop-shadow-2xl">
+                                TOPCU İNŞAAT & GAYRİMENKUL
                             </div>
                         </div>
 

@@ -33,29 +33,7 @@ export const ListingProvider = ({ children }) => {
 
     const addListing = async (newListing) => {
         try {
-            // Helper for safe number conversion
-            const safeNumber = (val) => (val === '' || val === null || val === undefined) ? null : Number(val);
-
-            const processedListing = {
-                ...newListing,
-                price: safeNumber(newListing.price),
-                beds: newListing.beds,
-                baths: safeNumber(newListing.baths),
-                sqm: safeNumber(newListing.sqm),
-                building_age: safeNumber(newListing.building_age),
-                total_floors: safeNumber(newListing.total_floors),
-                dues: safeNumber(newListing.dues),
-                balcony: Boolean(newListing.balcony),
-                elevator: Boolean(newListing.elevator),
-                parking: Boolean(newListing.parking),
-                furnished: Boolean(newListing.furnished),
-                in_complex: Boolean(newListing.in_complex),
-                loan_eligible: Boolean(newListing.loan_eligible),
-
-                swap: Boolean(newListing.swap),
-                is_opportunity: Boolean(newListing.is_opportunity),
-                consultant_id: safeNumber(newListing.consultant_id),
-            };
+            const processedListing = processListingData(newListing);
 
             const { data, error } = await supabase
                 .from('listings')
@@ -76,23 +54,89 @@ export const ListingProvider = ({ children }) => {
 
     const updateListing = async (id, updatedFields) => {
         try {
-            // Fix: Exclude 'id' and 'created_at' from parsing to avoid "id can only be updated to DEFAULT" error
-            const { id: _, created_at: __, ...fieldsToUpdate } = updatedFields;
+            // Fix: Exclude internal fields
+            const { id: _, created_at: __, ...fields } = updatedFields;
+            const processedFields = processListingData(fields);
 
             const { data, error } = await supabase
                 .from('listings')
-                .update(fieldsToUpdate)
+                .update(processedFields)
                 .eq('id', id)
                 .select();
 
             if (error) throw error;
 
-            setListings(prev => prev.map(item => item.id === id ? data[0] : item));
+            if (data && data.length > 0) {
+                setListings(prev => prev.map(item => item.id === id ? data[0] : item));
+            }
             return { success: true };
         } catch (error) {
             console.error('Error updating listing:', error.message);
             return { success: false, error: error.message };
         }
+    };
+
+    // Helper for safe number conversion and data normalization
+    const processListingData = (data) => {
+        const safeNumber = (val) => {
+            if (val === '' || val === null || val === undefined) return null;
+            // Handle cases where dots are used as thousands separators (e.g., 1.500.000)
+            // or where someone used a comma as a decimal point.
+            const cleaned = val.toString().replace(/\./g, '').replace(/,/g, '.');
+            const num = Number(cleaned);
+            return isNaN(num) ? null : num;
+        };
+
+        const processed = { ...data };
+
+        // 1. Explicitly clean all strings and handle empty strings first
+        Object.keys(processed).forEach(key => {
+            if (processed[key] === '') {
+                processed[key] = null;
+            }
+        });
+
+        // 2. Apply safeNumber to ALL potential numeric fields
+        // This ensures if a numeric column in DB gets a value, it's a Number or NULL, never ""
+        const numericFields = [
+            'price', 'baths', 'net_sqm', 'gross_sqm', 'sqm',
+            'building_age', 'total_floors', 'dues', 'deposit',
+            'ada_no', 'parsel_no', 'kaks', 'price_per_sqm',
+            'consultant_id'
+        ];
+
+        numericFields.forEach(field => {
+            if (processed[field] !== undefined) {
+                processed[field] = safeNumber(processed[field]);
+            }
+        });
+
+        // 3. Handle Special Cases
+        // beds can be "3+1" (string) or a number. If we force it to number, we lose "3+1".
+        // But if the DB is numeric, "3+1" will crash anyway. 
+        // We assume if it contains '+', it's a string and we hope the DB column is text.
+        if (processed.beds && !processed.beds.toString().includes('+')) {
+            const bedNum = safeNumber(processed.beds);
+            if (bedNum !== null) processed.beds = bedNum;
+        }
+
+        // 4. Force Boolean conversion for all Toggle fields
+        const booleanFields = [
+            'balcony', 'elevator', 'furnished', 'in_complex',
+            'loan_eligible', 'swap', 'is_opportunity'
+        ];
+
+        booleanFields.forEach(field => {
+            if (processed[field] !== undefined) {
+                if (processed[field] === null || processed[field] === '') {
+                    processed[field] = false; // Default for booleans if empty
+                } else {
+                    processed[field] = Boolean(processed[field]);
+                }
+            }
+        });
+
+        return processed;
     };
 
     const uploadImages = async (files) => {
