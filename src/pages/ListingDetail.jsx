@@ -20,7 +20,10 @@ const ListingDetail = () => {
 
     // Find listing
     const listing = listings.find(l => l.id.toString() === id);
-    const assignedConsultant = CONSULTANTS.find(c => c.id == listing?.consultant_id) || CONSULTANTS[0];
+
+    // Auto-fix: Map Mesut (1) to Mehmet (2) for display
+    const displayConsultantId = listing?.consultant_id == 1 ? 2 : listing?.consultant_id;
+    const assignedConsultant = CONSULTANTS.find(c => c.id == displayConsultantId) || CONSULTANTS[0];
 
     // Determine if it is a Land/Field listing
     const isLand = listing && ['Satılık Arsa', 'Satılık Tarla'].includes(listing.type);
@@ -119,7 +122,14 @@ const ListingDetail = () => {
         </div>
     );
 
-    const firstImage = allImages[0] || 'https://topcuinsaatgayrimenkul.com/meta_image.jpg';
+    // Helper to ensure absolute URL
+    const getAbsoluteUrl = (url) => {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        return `${window.location.origin}${url.startsWith('/') ? '' : '/'}${url}`;
+    };
+
+    const firstImage = getAbsoluteUrl(allImages[0]) || 'https://topcuinsaatgayrimenkul.com/meta_image.jpg';
     const pageTitle = `${listing.title} | Topcu İnşaat & Gayrimenkul`;
     const shareDescription = `${listing.type} - ${Number(listing.price || 0).toLocaleString('tr-TR')} ${currencySymbol} - ${listing.location}`;
 

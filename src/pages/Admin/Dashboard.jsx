@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Trash2, Edit, Plus, X, Search, Move } from 'lucide-react';
 import { CONSULTANTS } from '../../constants/consultants';
 import { LOCATIONS } from '../../constants/locations';
+import { supabase } from '../../supabase';
 
 const ZONING_OPTIONS = ['Bağ & Bahçe', 'Depo & Antrepo', 'Konut', 'Muhtelif', 'Sanayi', 'Sera', 'Sit Alanı', 'Tarla', 'Tarla + Bağ', 'Ticari', 'Ticari + Konut', 'Villa', 'Zeytinlik'];
 const TAPU_OPTIONS = ['Hisseli Tapu', 'Müstakil Tapulu', 'Tapu Kaydı Yok'];
@@ -135,7 +136,7 @@ const Dashboard = () => {
         listing_no: '',
         image: '',
         images: [],
-        consultant_id: 1,
+        consultant_id: 2,
         is_opportunity: false,
         // Land specific fields
         zoning_status: '',
@@ -414,6 +415,7 @@ const Dashboard = () => {
                             >
                                 <Plus size={20} /> Yeni İlan
                             </button>
+
                             <button onClick={handleLogout} className="text-red-600 font-medium hover:text-red-700 whitespace-nowrap">
                                 Çıkış Yap
                             </button>
