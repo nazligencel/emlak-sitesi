@@ -106,7 +106,7 @@ const ListingCard = ({ listing, index }) => {
                                 <div className="flex items-center gap-1.5" title="Cephe">
                                     <Compass size={13} className="text-slate-400" />
                                     <span className="truncate max-w-[80px]">
-                                        {listing.facade ? (listing.facade.split(' - ').length > 2 ? 'Çoklu' : listing.facade) : '-'}
+                                        {listing.facade ? listing.facade.split(' - ').map(f => f.charAt(0)).join(' - ') : '-'}
                                     </span>
                                 </div>
                             </>

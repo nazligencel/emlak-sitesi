@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import { useListings } from '../context/ListingContext';
+import { Helmet } from 'react-helmet-async';
 import { MapPin, Ruler, Bed, Square, Home, Utensils, ArrowLeft, Phone, CheckCircle2, ChevronLeft, ChevronRight, Share2, X, Compass, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CONSULTANTS } from '../constants/consultants';
@@ -19,7 +20,7 @@ const ListingDetail = () => {
 
     // Find listing
     const listing = listings.find(l => l.id.toString() === id);
-    const assignedConsultant = CONSULTANTS.find(c => c.id === listing?.consultant_id) || CONSULTANTS[0];
+    const assignedConsultant = CONSULTANTS.find(c => c.id == listing?.consultant_id) || CONSULTANTS[0];
 
     // Determine if it is a Land/Field listing
     const isLand = listing && ['Satılık Arsa', 'Satılık Tarla'].includes(listing.type);
@@ -64,6 +65,24 @@ const ListingDetail = () => {
         }
     }, [isLightboxOpen]);
 
+    // Handle Keyboard Navigation for Lightbox
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (!isLightboxOpen) return;
+
+            if (e.key === 'ArrowLeft') {
+                handlePrev();
+            } else if (e.key === 'ArrowRight') {
+                handleNext();
+            } else if (e.key === 'Escape') {
+                setIsLightboxOpen(false);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isLightboxOpen, currentImageIndex, allImages]);
+
     const scrollToImage = (index) => {
         if (scrollContainerRef.current) {
             scrollContainerRef.current.scrollTo({
@@ -100,8 +119,23 @@ const ListingDetail = () => {
         </div>
     );
 
+    const firstImage = allImages[0] || 'https://topcuinsaatgayrimenkul.com/meta_image.jpg';
+    const pageTitle = `${listing.title} | Topcu İnşaat & Gayrimenkul`;
+    const shareDescription = `${listing.type} - ${Number(listing.price || 0).toLocaleString('tr-TR')} ${currencySymbol} - ${listing.location}`;
+
     return (
         <div className="pt-24 pb-20 bg-primary min-h-screen">
+            <Helmet>
+                <title>{pageTitle}</title>
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={shareDescription} />
+                <meta property="og:image" content={firstImage} />
+                <meta property="og:url" content={window.location.href} />
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:image" content={firstImage} />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={shareDescription} />
+            </Helmet>
             <div className="container mx-auto px-4 md:px-6">
                 {/* Build Navigation & Actions */}
                 <div className="flex justify-between items-center mb-6">
@@ -264,7 +298,7 @@ const ListingDetail = () => {
                                 >
                                     {/* Quick Stats - Compact One Row */}
                                     <div className="grid grid-cols-4 gap-3">
-                                        <StatBox icon={Ruler} label="Alan" value={`${listing.gross_sqm || listing.sqm || '-'} m²`} />
+                                        <StatBox icon={Ruler} label="Brüt Alan" value={`${listing.gross_sqm || '-'} m²`} />
                                         {isLand ? (
                                             <>
                                                 <StatBox icon={FileText} label="İmar" value={listing.zoning_status || '-'} />
@@ -275,7 +309,7 @@ const ListingDetail = () => {
                                             <>
                                                 <StatBox icon={Bed} label="Oda" value={listing.beds || '-'} />
                                                 <StatBox icon={Utensils} label="Mutfak" value={listing.kitchen || '-'} />
-                                                <StatBox icon={Compass} label="Cephe" value={listing.facade ? (listing.facade.includes('-') ? listing.facade.split(' - ')[0] + '..' : listing.facade) : '-'} />
+                                                <StatBox icon={Compass} label="Cephe" value={listing.facade ? listing.facade.split(' - ').map(f => f.charAt(0)).join(' - ') : '-'} />
                                             </>
                                         )}
                                     </div>
@@ -294,7 +328,7 @@ const ListingDetail = () => {
                                                 <DetailRow label="Emlak Tipi" value={listing.type} />
                                                 <DetailRow label="Tapu Durumu" value={listing.tapu_status || '-'} />
                                                 <DetailRow label="Takas" value={listing.swap ? 'Olabilir' : 'Yok'} />
-                                                {listing.swap ? <DetailRow label="Takas" value="Olabilir" /> : <DetailRow label="Takas" value="Yok" />}
+
 
                                                 {isLand ? (
                                                     // Land Specific Details
@@ -308,6 +342,8 @@ const ListingDetail = () => {
                                                 ) : (
                                                     // Building Specific Details
                                                     <>
+                                                        <DetailRow label="Brüt m²" value={`${listing.gross_sqm || '-'} m²`} />
+                                                        <DetailRow label="Net m²" value={`${listing.net_sqm || '-'} m²`} />
                                                         <DetailRow label="Bina Yaşı" value={listing.building_age === 0 || listing.building_age === '0' ? '0 (Yeni)' : (listing.building_age || 'Yeni')} />
                                                         <DetailRow label="Kat Sayısı" value={listing.total_floors || '-'} />
                                                         <DetailRow label="Bulunduğu Kat" value={listing.floor_location || '-'} />
@@ -316,7 +352,7 @@ const ListingDetail = () => {
                                                         <DetailRow label="Aidat" value={listing.dues ? `${listing.dues} TL` : '-'} />
                                                         <DetailRow label="Depozito" value={listing.deposit ? `${Number(listing.deposit).toLocaleString('tr-TR')} ${currencySymbol}` : '-'} />
                                                         <DetailRow label="Kredi" value={listing.loan_eligible ? 'Uygun' : 'Uygun Değil'} />
-                                                        <DetailRow label="Cephe" value={listing.facade || '-'} />
+                                                        <DetailRow label="Cephe" value={listing.facade ? listing.facade.split(' - ').map(f => f.charAt(0)).join(' - ') : '-'} />
                                                         <DetailRow label="Otopark" value={listing.parking && listing.parking !== 'true' && listing.parking !== true ? listing.parking : 'Yok'} />
                                                         <DetailRow label="Mutfak" value={`${listing.kitchen || 'Kapalı'} Mutfak`} />
                                                     </>
