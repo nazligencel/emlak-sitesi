@@ -306,8 +306,8 @@ const ListingDetail = () => {
                                     transition={{ duration: 0.3 }}
                                     className="space-y-8"
                                 >
-                                    {/* Quick Stats - Compact One Row */}
-                                    <div className="grid grid-cols-4 gap-3">
+                                    {/* Quick Stats - Compact One Row on Desktop, 2x2 on Mobile */}
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                         <StatBox icon={Ruler} label="Brüt Alan" value={`${listing.gross_sqm || '-'} m²`} />
                                         {isLand ? (
                                             <>
@@ -562,10 +562,10 @@ const ListingDetail = () => {
 };
 
 const StatBox = ({ icon: Icon, label, value }) => (
-    <div className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-xl border border-slate-200/60 hover:border-secondary/50 transition-colors group h-auto min-h-[80px]">
-        <Icon size={20} className="text-slate-400 mb-1.5 group-hover:text-secondary transition-colors" />
-        <span className="font-bold text-primary text-sm text-center leading-tight line-clamp-1 break-all px-1">{value}</span>
-        <span className="font-medium text-slate-400 text-xs text-center mt-0.5">{label}</span>
+    <div className="flex flex-col items-center justify-center p-2 md:p-3 bg-slate-50 rounded-xl border border-slate-200/60 hover:border-secondary/50 transition-colors group h-auto min-h-[70px] md:min-h-[80px]">
+        <Icon size={18} className="text-slate-400 mb-1 md:mb-1.5 group-hover:text-secondary transition-colors md:w-5 md:h-5" />
+        <span className="font-bold text-primary text-xs md:text-sm text-center leading-tight break-words w-full px-0.5">{value}</span>
+        <span className="font-medium text-slate-400 text-[10px] md:text-xs text-center mt-0.5">{label}</span>
     </div>
 );
 
