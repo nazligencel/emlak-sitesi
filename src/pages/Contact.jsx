@@ -1,5 +1,6 @@
 import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { COMPANY } from '../constants/config';
 
 const Contact = () => {
     return (
@@ -40,13 +41,12 @@ const Contact = () => {
                                     <div>
                                         <h3 className="font-bold text-lg mb-1">Ofis Adresimiz</h3>
                                         <a
-                                            href="https://www.google.com/maps/search/?api=1&query=Çamlıbel+Mahallesi+Ahmet+Vefik+Paşa+Caddesi+No:29+Kepez/Antalya"
+                                            href={`https://www.google.com/maps/search/?api=1&query=${COMPANY.mapsQuery}`}
                                             target="_blank"
                                             rel="noreferrer"
                                             className="text-slate-600 hover:text-secondary transition-colors"
                                         >
-                                            Çamlıbel Mahallesi Ahmet Vefik Paşa Caddesi<br />
-                                            No:29 Kepez/Antalya
+                                            {COMPANY.address}
                                         </a>
                                     </div>
                                 </div>
@@ -57,8 +57,9 @@ const Contact = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg mb-1">Telefon</h3>
-                                        <p className="text-slate-600">0(531) 360 07 34</p>
-                                        <p className="text-slate-600">0(540) 360 07 34</p>
+                                        {COMPANY.phones.map((phone, i) => (
+                                            <p key={i} className="text-slate-600">{phone}</p>
+                                        ))}
                                     </div>
                                 </div>
                             </div>
@@ -70,7 +71,7 @@ const Contact = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg mb-1">E-Posta</h3>
-                                        <p className="text-slate-600">topcuinsaatemlak@gmail.com</p>
+                                        <p className="text-slate-600">{COMPANY.email}</p>
                                     </div>
                                 </div>
 
@@ -80,8 +81,8 @@ const Contact = () => {
                                     </div>
                                     <div>
                                         <h3 className="font-bold text-lg mb-1">Çalışma Saatleri</h3>
-                                        <p className="text-slate-600">Pazartesi - Cumartesi: 09:00 - 19:00</p>
-                                        <p className="text-slate-600">Pazar: Kapalı</p>
+                                        <p className="text-slate-600">Pazartesi - Cumartesi: {COMPANY.hours.weekday}</p>
+                                        <p className="text-slate-600">Pazar: {COMPANY.hours.sunday}</p>
                                     </div>
                                 </div>
                             </div>
@@ -103,7 +104,7 @@ const Contact = () => {
                         scrolling="no"
                         marginHeight="0"
                         marginWidth="0"
-                        src="https://maps.google.com/maps?q=%C3%87aml%C4%B1bel%20Mahallesi%20Ahmet%20Vefik%20Pa%C5%9Fa%20Caddesi%20No:29%20Kepez/Antalya&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                        src={`https://maps.google.com/maps?q=${encodeURIComponent(COMPANY.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
                         className="w-full grayscale-[0.2] hover:grayscale-0 transition-all duration-700"
                     >
                     </iframe>

@@ -1,9 +1,10 @@
 import { motion } from 'framer-motion';
+import { COMPANY } from '../constants/config';
 
 const WhatsAppButton = () => {
     return (
         <motion.a
-            href="https://wa.me/905403600734"
+            href={`https://wa.me/${COMPANY.whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
             initial={{ scale: 0 }}

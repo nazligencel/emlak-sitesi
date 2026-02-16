@@ -30,7 +30,7 @@ const OpportunitySlider = ({ listings }) => {
         }, 5000); // 5 seconds
 
         return () => clearInterval(timer);
-    }, [currentIndex, listings.length]);
+    }, [listings.length]);
 
     const nextSlide = () => {
         setCurrentIndex((prev) => (prev + 1) % listings.length);
@@ -77,7 +77,7 @@ const OpportunitySlider = ({ listings }) => {
                         // But the user likes animations (Premium, "wow").
                         // Let's rely on listing.id. If we show the same listing twice (looping), we need unique keys.
 
-                        const uniqueKey = `${listing.id}-${currentIndex}-${idx}`;
+                        const uniqueKey = `${listing.id}-slot${idx}`;
 
                         return (
                             <motion.div

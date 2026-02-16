@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useListings } from '../../context/ListingContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -46,11 +46,11 @@ const Dashboard = () => {
     // ... (rest of state)
 
     // Filter Logic
-    const filteredListings = listings.filter(listing => {
+    const filteredListings = useMemo(() => listings.filter(listing => {
         const term = searchTerm.toLowerCase();
 
         // Find consultant for name search
-        const consultant = CONSULTANTS.find(c => c.id === listing.consultant_id);
+        const consultant = CONSULTANTS.find(c => c.id === Number(listing.consultant_id));
         const consultantName = consultant ? consultant.name.toLowerCase() : '';
 
         const matchesSearch = (
@@ -59,10 +59,10 @@ const Dashboard = () => {
             listing.location?.toLowerCase().includes(term) ||
             consultantName.includes(term)
         );
-        const matchesConsultant = filterConsultant ? listing.consultant_id === parseInt(filterConsultant) : true;
+        const matchesConsultant = filterConsultant ? Number(listing.consultant_id) === parseInt(filterConsultant) : true;
 
         return matchesSearch && matchesConsultant;
-    });
+    }), [listings, searchTerm, filterConsultant]);
 
     // ... (rest of search/filter code)
 
@@ -283,6 +283,7 @@ const Dashboard = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (uploading) return;
         setUploading(true);
 
         try {
