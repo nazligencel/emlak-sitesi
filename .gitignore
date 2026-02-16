@@ -20,6 +20,7 @@ dist-ssr/
 .env.development.local
 .env.test.local
 .env.production.local
+og-config.php
 
 # Editor directories and files
 .vscode/*

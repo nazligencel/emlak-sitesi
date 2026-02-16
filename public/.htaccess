@@ -1,6 +1,14 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # Social media bot detection for listing pages
+  # Bots don't execute JS, so they can't see React Helmet meta tags.
+  # Redirect them to og.php which returns proper OG tags from Supabase data.
+  RewriteCond %{HTTP_USER_AGENT} (facebookexternalhit|Facebot|Twitterbot|WhatsApp|LinkedInBot|Slackbot|TelegramBot|Discordbot|Pinterest|vkShare|W3C_Validator|Googlebot|bingbot|Applebot) [NC]
+  RewriteRule ^ilan/.+$ /og.php [L]
+
+  # Standard SPA routing
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
