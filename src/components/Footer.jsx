@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Instagram, Facebook, Linkedin } from 'lucide-react';
+import { COMPANY } from '../constants/config';
 
 const Footer = () => {
     return (
@@ -19,7 +20,7 @@ const Footer = () => {
                             Antalya'nın en prestijli projelerinde güven, kalite ve estetiği bir araya getiriyoruz. Hayalinizdeki yaşam alanına bizimle adım atın.
                         </p>
                         <div className="flex gap-4">
-                            <a href="https://www.instagram.com/topcuinsaattgayrimenkul/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-secondary hover:text-black transition-colors">
+                            <a href={COMPANY.social.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-secondary hover:text-black transition-colors">
                                 <Instagram size={20} />
                             </a>
                         </div>
@@ -72,15 +73,15 @@ const Footer = () => {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3">
                                 <MapPin className="text-secondary shrink-0 mt-1" size={20} />
-                                <span className="text-sm">Çamlıbel Mahallesi Ahmet Vefik Paşa Caddesi No:29 Kepez/Antalya</span>
+                                <span className="text-sm">{COMPANY.address}</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Phone className="text-secondary shrink-0" size={20} />
-                                <span className="text-sm">+90 540 360 07 34</span>
+                                <span className="text-sm">{COMPANY.phone}</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Mail className="text-secondary shrink-0" size={20} />
-                                <span className="text-sm">topcuinsaatemlak@gmail.com</span>
+                                <span className="text-sm">{COMPANY.email}</span>
                             </li>
                         </ul>
                     </div>

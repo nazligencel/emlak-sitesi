@@ -22,8 +22,8 @@ const ListingDetail = () => {
     const listing = listings.find(l => l.id.toString() === id);
 
     // Auto-fix: Map Mesut (1) to Mehmet (2) for display
-    const displayConsultantId = listing?.consultant_id == 1 ? 2 : listing?.consultant_id;
-    const assignedConsultant = CONSULTANTS.find(c => c.id == displayConsultantId) || CONSULTANTS[0];
+    const displayConsultantId = Number(listing?.consultant_id) === 1 ? 2 : Number(listing?.consultant_id);
+    const assignedConsultant = CONSULTANTS.find(c => c.id === displayConsultantId) || CONSULTANTS[0];
 
     // Determine if it is a Land/Field listing
     const isLand = listing && ['Satılık Arsa', 'Satılık Tarla'].includes(listing.type);

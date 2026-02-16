@@ -140,9 +140,19 @@ export const ListingProvider = ({ children }) => {
     };
 
     const uploadImages = async (files) => {
+        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+        const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+        const MIME_TO_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
+
         try {
             const uploadPromises = Array.from(files).map(async (file) => {
-                const fileExt = file.name.split('.').pop();
+                if (!ALLOWED_TYPES.includes(file.type)) {
+                    throw new Error(`Geçersiz dosya türü: ${file.name}. Sadece JPG, PNG, WebP ve GIF yüklenebilir.`);
+                }
+                if (file.size > MAX_FILE_SIZE) {
+                    throw new Error(`Dosya çok büyük: ${file.name}. Maksimum 5MB yüklenebilir.`);
+                }
+                const fileExt = MIME_TO_EXT[file.type] || 'jpg';
                 const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
                 const filePath = `${fileName}`;
 

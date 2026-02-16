@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import ListingCard from '../components/ListingCard';
 import { useListings } from '../context/ListingContext';
@@ -19,7 +19,7 @@ const Listings = () => {
         }
     }, [location.state]);
 
-    const filteredListings = listings.filter(listing => {
+    const filteredListings = useMemo(() => listings.filter(listing => {
         const matchesSearch =
             listing.title.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
             listing.location.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
@@ -29,7 +29,7 @@ const Listings = () => {
         const matchesStatus = statusFilter ? listing.status === statusFilter : true;
 
         return matchesSearch && matchesType && matchesStatus;
-    });
+    }), [listings, searchTerm, typeFilter, statusFilter]);
 
     return (
         <div className="pt-32 pb-20 bg-primary min-h-screen">

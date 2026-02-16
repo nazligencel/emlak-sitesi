@@ -42,6 +42,13 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="*" element={
+              <div className="pt-32 pb-20 text-center min-h-screen bg-primary">
+                <h1 className="text-4xl font-bold text-white mb-4">404</h1>
+                <p className="text-slate-300 mb-6">Aradığınız sayfa bulunamadı.</p>
+                <a href="/" className="text-secondary hover:underline font-medium">Ana Sayfaya Dön</a>
+              </div>
+            } />
           </Routes>
           <Footer />
         </Router>
