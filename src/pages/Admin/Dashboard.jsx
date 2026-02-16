@@ -264,17 +264,21 @@ const Dashboard = () => {
         setDisplayImages(_displayImages);
     };
 
-    const generateListingNo = () => {
-        const sequentialNumbers = listings
-            .map(l => parseInt(l.listing_no))
-            .filter(n => !isNaN(n) && n < 1000000);
+    const generateListingNo = async () => {
+        // Call the atomic database function that increments and returns the next listing_no.
+        // This ensures: 1) No duplicates even with concurrent users 2) Deleted numbers are never reused
+        const { data, error } = await supabase.rpc('next_listing_no');
 
-        if (sequentialNumbers.length === 0) {
-            return "500";
+        if (!error && data) {
+            return data.toString();
         }
 
-        const maxNum = Math.max(...sequentialNumbers);
-        return (maxNum + 1).toString();
+        // Fallback: use client-side max if RPC is not available
+        console.warn('next_listing_no RPC failed, using fallback:', error?.message);
+        const allNumbers = listings
+            .map(l => parseInt(l.listing_no))
+            .filter(n => !isNaN(n) && n < 1000000);
+        return allNumbers.length === 0 ? "500" : (Math.max(...allNumbers) + 1).toString();
     };
 
     const handleSubmit = async (e) => {
@@ -309,7 +313,7 @@ const Dashboard = () => {
 
             let finalListingNo = form.listing_no;
             if (!editingId && !finalListingNo) {
-                finalListingNo = generateListingNo();
+                finalListingNo = await generateListingNo();
             }
 
             const sanitizeNumeric = (val) => (val === '' ? null : val);

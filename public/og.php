@@ -98,6 +98,12 @@ if (!empty($ogImage) && strpos($ogImage, 'http') !== 0) {
     $ogImage = 'https://topcuinsaatgayrimenkul.com' . (strpos($ogImage, '/') === 0 ? '' : '/') . $ogImage;
 }
 
+// Optimize image for social media via wsrv.nl (free image proxy)
+// Resizes large images to 1200x630 ~100-200KB so WhatsApp Status doesn't timeout
+if (!empty($ogImage) && strpos($ogImage, 'supabase.co/') !== false) {
+    $ogImage = 'https://wsrv.nl/?url=' . urlencode($ogImage) . '&w=1200&h=630&fit=cover&q=75&output=jpg';
+}
+
 // Currency symbol mapping
 $currencySymbols = [
     'USD' => '$',
