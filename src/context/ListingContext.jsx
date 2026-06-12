@@ -57,6 +57,7 @@ export const ListingProvider = ({ children }) => {
             // Fix: Exclude internal fields
             const { id: _, created_at: __, ...fields } = updatedFields;
             const processedFields = processListingData(fields);
+            const previous = listings.find(item => item.id === id);
 
             const { data, error } = await supabase
                 .from('listings')
@@ -68,6 +69,15 @@ export const ListingProvider = ({ children }) => {
 
             if (data && data.length > 0) {
                 setListings(prev => prev.map(item => item.id === id ? data[0] : item));
+
+                // Remove images that were dropped during this edit (best-effort).
+                // Guard on `images` actually being part of the update so we never
+                // wipe a listing's photos when images weren't touched.
+                if (previous && Array.isArray(processedFields.images)) {
+                    const oldUrls = previous.images || (previous.image ? [previous.image] : []);
+                    const removed = oldUrls.filter(u => u && !processedFields.images.includes(u));
+                    if (removed.length > 0) await removeImages(removed);
+                }
             }
             return { success: true };
         } catch (error) {
@@ -80,10 +90,32 @@ export const ListingProvider = ({ children }) => {
     const processListingData = (data) => {
         const safeNumber = (val) => {
             if (val === '' || val === null || val === undefined) return null;
-            // Handle cases where dots are used as thousands separators (e.g., 1.500.000)
-            // or where someone used a comma as a decimal point.
-            const cleaned = val.toString().replace(/\./g, '').replace(/,/g, '.');
-            const num = Number(cleaned);
+            if (typeof val === 'number') return isNaN(val) ? null : val;
+
+            let s = val.toString().trim();
+            if (s === '') return null;
+
+            // Normalize Turkish/European number formatting into a JS-parseable number.
+            if (s.includes(',')) {
+                // Comma present => comma is the decimal separator, dots are thousands
+                // separators. "1.500.000,75" -> "1500000.75", "1,50" -> "1.5"
+                s = s.replace(/\./g, '').replace(',', '.');
+            } else {
+                const dotCount = (s.match(/\./g) || []).length;
+                if (dotCount > 1) {
+                    // Multiple dots => all thousands separators. "1.500.000" -> "1500000"
+                    s = s.replace(/\./g, '');
+                } else if (dotCount === 1) {
+                    // A single dot is ambiguous. Treat exactly 3 trailing digits as a
+                    // thousands separator ("1.500" -> 1500); otherwise keep it as a
+                    // decimal point so values like KAKS "1.50"/"2.07"/"0.30" survive
+                    // instead of being multiplied by 100.
+                    const frac = s.split('.')[1];
+                    if (frac.length === 3) s = s.replace('.', '');
+                }
+            }
+
+            const num = Number(s);
             return isNaN(num) ? null : num;
         };
 
@@ -139,39 +171,73 @@ export const ListingProvider = ({ children }) => {
         return processed;
     };
 
+    // Derive the in-bucket path (file name) from a public storage URL.
+    const pathFromUrl = (url) => {
+        if (!url) return null;
+        const marker = '/listing-images/';
+        const idx = url.indexOf(marker);
+        return idx === -1 ? null : url.slice(idx + marker.length);
+    };
+
+    // Best-effort removal of storage files given their public URLs. Never throws —
+    // a failed cleanup should not break the surrounding operation.
+    const removeImages = async (urls) => {
+        const paths = (urls || []).map(pathFromUrl).filter(Boolean);
+        if (paths.length === 0) return;
+        try {
+            await supabase.storage.from('listing-images').remove(paths);
+        } catch (error) {
+            console.error('Error removing images:', error.message);
+        }
+    };
+
     const uploadImages = async (files) => {
         const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
         const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
         const MIME_TO_EXT = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
 
+        const fileArr = Array.from(files);
+
+        // Validate everything up front so a single bad file can't leave half the
+        // batch uploaded (orphaned) before we hit the failure.
+        for (const file of fileArr) {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                throw new Error(`Geçersiz dosya türü: ${file.name}. Sadece JPG, PNG, WebP ve GIF yüklenebilir.`);
+            }
+            if (file.size > MAX_FILE_SIZE) {
+                throw new Error(`Dosya çok büyük: ${file.name}. Maksimum 5MB yüklenebilir.`);
+            }
+        }
+
+        const uploadedPaths = [];
         try {
-            const uploadPromises = Array.from(files).map(async (file) => {
-                if (!ALLOWED_TYPES.includes(file.type)) {
-                    throw new Error(`Geçersiz dosya türü: ${file.name}. Sadece JPG, PNG, WebP ve GIF yüklenebilir.`);
-                }
-                if (file.size > MAX_FILE_SIZE) {
-                    throw new Error(`Dosya çok büyük: ${file.name}. Maksimum 5MB yüklenebilir.`);
-                }
+            const urls = await Promise.all(fileArr.map(async (file) => {
                 const fileExt = MIME_TO_EXT[file.type] || 'jpg';
                 const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-                const filePath = `${fileName}`;
 
                 const { error: uploadError } = await supabase.storage
                     .from('listing-images')
-                    .upload(filePath, file);
+                    .upload(fileName, file);
 
                 if (uploadError) throw uploadError;
+                uploadedPaths.push(fileName);
 
                 const { data } = supabase.storage
                     .from('listing-images')
-                    .getPublicUrl(filePath);
+                    .getPublicUrl(fileName);
 
                 return data.publicUrl;
-            });
-
-            const urls = await Promise.all(uploadPromises);
+            }));
             return urls;
         } catch (error) {
+            // Roll back any files that did upload so they don't orphan in storage.
+            if (uploadedPaths.length > 0) {
+                try {
+                    await supabase.storage.from('listing-images').remove(uploadedPaths);
+                } catch (cleanupError) {
+                    console.error('Error cleaning up partial upload:', cleanupError.message);
+                }
+            }
             console.error('Error uploading images:', error.message);
             throw error;
         }
@@ -179,12 +245,22 @@ export const ListingProvider = ({ children }) => {
 
     const deleteListing = async (id) => {
         try {
+            const target = listings.find(item => item.id === id);
+
             const { error } = await supabase
                 .from('listings')
                 .delete()
                 .eq('id', id);
 
             if (error) throw error;
+
+            // Remove the listing's images from storage so they don't orphan (best-effort).
+            if (target) {
+                const urls = (target.images && target.images.length > 0)
+                    ? target.images
+                    : (target.image ? [target.image] : []);
+                await removeImages(urls);
+            }
 
             setListings(prev => prev.filter(item => item.id !== id));
             return { success: true };
@@ -195,7 +271,7 @@ export const ListingProvider = ({ children }) => {
     };
 
     return (
-        <ListingContext.Provider value={{ listings, addListing, updateListing, deleteListing, uploadImages, loading }}>
+        <ListingContext.Provider value={{ listings, addListing, updateListing, deleteListing, uploadImages, removeImages, loading }}>
             {children}
         </ListingContext.Provider>
     );

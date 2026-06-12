@@ -15,7 +15,7 @@ const GENERAL_FEATURES_OPTIONS = ['İfrazlı', 'Parselli', 'Projeli', 'Köşe Pa
 const VIEW_OPTIONS = ['Şehir', 'Deniz', 'Doğa', 'Boğaz', 'Göl'];
 
 const Dashboard = () => {
-    const { listings, addListing, updateListing, deleteListing, uploadImages } = useListings(); // Use uploadImages
+    const { listings, addListing, updateListing, deleteListing, uploadImages, removeImages } = useListings();
     const { logout } = useAuth();
     const navigate = useNavigate();
 
@@ -104,6 +104,7 @@ const Dashboard = () => {
     // Form state...
     const initialFormState = {
         title: '',
+        description: '',
         location: '',
         price: '',
         currency: 'TL',
@@ -256,25 +257,40 @@ const Dashboard = () => {
 
     // Drag and Drop Handlers
     const handleSort = () => {
-        let _displayImages = [...displayImages];
-        const draggedItemContent = _displayImages.splice(dragItem.current, 1)[0];
-        _displayImages.splice(dragOverItem.current, 0, draggedItemContent);
+        const from = dragItem.current;
+        const to = dragOverItem.current;
+
+        // Reset refs immediately so a stale value can't leak into the next drag.
         dragItem.current = null;
         dragOverItem.current = null;
-        setDisplayImages(_displayImages);
+
+        // Guard: if the drop target never registered (e.g. dropped outside a card),
+        // do nothing. Without this, splice(null, ...) coerces null to 0 and the photo
+        // gets thrown to the beginning of the list.
+        if (from === null || to === null || from === to) return;
+
+        setDisplayImages(prev => {
+            const updated = [...prev];
+            const [draggedItem] = updated.splice(from, 1);
+            updated.splice(to, 0, draggedItem);
+            return updated;
+        });
     };
 
     const generateListingNo = async () => {
         // Call the atomic database function that increments and returns the next listing_no.
         // This ensures: 1) No duplicates even with concurrent users 2) Deleted numbers are never reused
-        const { data, error } = await supabase.rpc('next_listing_no');
-
-        if (!error && data) {
-            return data.toString();
+        // Retry once before falling back — the client-side fallback below is not
+        // collision-safe, so prefer the atomic RPC even across a transient error.
+        for (let attempt = 0; attempt < 2; attempt++) {
+            const { data, error } = await supabase.rpc('next_listing_no');
+            if (!error && data) return data.toString();
+            if (attempt === 1) console.warn('next_listing_no RPC failed, using fallback:', error?.message);
         }
 
-        // Fallback: use client-side max if RPC is not available
-        console.warn('next_listing_no RPC failed, using fallback:', error?.message);
+        // Fallback (RPC unavailable): client-side max. NOT collision-safe — two
+        // concurrent admins can produce the same number. The real fix is a UNIQUE
+        // constraint on listings.listing_no together with the deployed RPC.
         const allNumbers = listings
             .map(l => parseInt(l.listing_no))
             .filter(n => !isNaN(n) && n < 1000000);
@@ -286,13 +302,13 @@ const Dashboard = () => {
         if (uploading) return;
         setUploading(true);
 
+        let uploadedUrls = [];
         try {
             // 1. Separate items
             const existingItems = displayImages.filter(i => i.type === 'existing');
             const newItems = displayImages.filter(i => i.type === 'new');
 
             // 2. Upload new files
-            let uploadedUrls = [];
             if (newItems.length > 0) {
                 const filesToUpload = newItems.map(img => img.file);
                 uploadedUrls = await uploadImages(filesToUpload);
@@ -316,8 +332,6 @@ const Dashboard = () => {
             if (!editingId && !finalListingNo) {
                 finalListingNo = await generateListingNo();
             }
-
-            const sanitizeNumeric = (val) => (val === '' ? null : val);
 
             const formData = {
                 ...form,
@@ -345,9 +359,12 @@ const Dashboard = () => {
                 setEditingId(null);
                 setDisplayImages([]);
             } else {
+                // DB write failed — remove freshly-uploaded images so they don't orphan.
+                if (uploadedUrls.length > 0) await removeImages(uploadedUrls);
                 alert('Hata: ' + result.error);
             }
         } catch (error) {
+            if (uploadedUrls.length > 0) await removeImages(uploadedUrls);
             alert('Hata: ' + error.message);
         } finally {
             setUploading(false);
@@ -414,6 +431,7 @@ const Dashboard = () => {
                                     setDisplayImages([]);
                                     setLocCity('');
                                     setLocDistrict('');
+                                    setLocNeighborhood('');
                                     setView('form');
                                 }}
                                 className="bg-secondary text-black px-4 py-2 rounded-lg font-bold flex items-center gap-2 hover:bg-secondary/90 transition-colors whitespace-nowrap"
@@ -1016,7 +1034,8 @@ const Dashboard = () => {
                                             <img
                                                 src={img.url}
                                                 alt={`Görsel ${index}`}
-                                                className={`w-full h-full object-cover rounded-xl shadow-sm border-2 transition-all ${img.type === 'new' ? 'border-secondary' : 'border-slate-100 group-hover:border-slate-300'}`}
+                                                draggable={false}
+                                                className={`w-full h-full object-cover rounded-xl shadow-sm border-2 transition-all select-none pointer-events-none ${img.type === 'new' ? 'border-secondary' : 'border-slate-100 group-hover:border-slate-300'}`}
                                             />
 
                                             {/* Order Badge */}

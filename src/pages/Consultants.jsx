@@ -1,4 +1,4 @@
-import { Phone, Mail, Linkedin } from 'lucide-react';
+import { Phone, Mail } from 'lucide-react';
 import { CONSULTANTS } from '../constants/consultants';
 
 const Consultants = () => {
@@ -25,7 +25,7 @@ const Consultants = () => {
                             </div>
                             <div className="p-6">
                                 <h3 className="text-xl font-bold text-primary mb-1">{consultant.name}</h3>
-                                <p className="text-secondary font-medium mb-4">{consultant.role}</p>
+                                <p className="text-amber-700 font-medium mb-4">{consultant.role}</p>
 
                                 <div className="space-y-3 text-slate-600">
                                     <a href={`tel:${consultant.phone}`} className="flex items-center gap-3 hover:text-black transition-colors">

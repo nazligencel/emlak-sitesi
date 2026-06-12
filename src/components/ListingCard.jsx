@@ -53,7 +53,7 @@ const ListingCard = ({ listing, index }) => {
                 <div className="p-4 flex flex-col flex-1">
                     {/* Price & Location */}
                     <div className="flex justify-between items-start gap-2 mb-2">
-                        <div className="text-secondary font-bold text-lg leading-tight">
+                        <div className="text-primary font-bold text-lg leading-tight">
                             {listing.price ? Number(listing.price).toLocaleString('tr-TR') : 0} {{
                                 'USD': '$',
                                 'EUR': '€',

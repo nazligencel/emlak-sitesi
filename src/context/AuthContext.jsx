@@ -55,14 +55,16 @@ export const AuthProvider = ({ children }) => {
     }, [user]);
 
     const login = async (email, password) => {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
             email,
             password
         });
 
         if (error) {
             console.error('Login error:', error.message);
-            return { success: false, error: 'Hatalı e-posta veya şifre.' };
+            // Single generic message for every failure — never reveal whether the
+            // account exists (prevents user/account enumeration).
+            return { success: false, error: 'E-posta veya şifre hatalı.' };
         }
         return { success: true };
     };

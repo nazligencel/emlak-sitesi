@@ -5,7 +5,7 @@ import { useListings } from '../context/ListingContext';
 import { Search } from 'lucide-react';
 
 const Listings = () => {
-    const { listings } = useListings();
+    const { listings, loading } = useListings();
     const location = useLocation();
     const [searchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState('');
@@ -21,8 +21,8 @@ const Listings = () => {
 
     const filteredListings = useMemo(() => listings.filter(listing => {
         const matchesSearch =
-            listing.title.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
-            listing.location.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
+            (listing.title || '').toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
+            (listing.location || '').toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr')) ||
             (listing.listing_no && listing.listing_no.toString().includes(searchTerm));
 
         const matchesType = typeFilter ? listing.type === typeFilter : true;
@@ -52,7 +52,13 @@ const Listings = () => {
                     </div>
                 </div>
 
-                {filteredListings.length > 0 ? (
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {Array.from({ length: 8 }).map((_, i) => (
+                            <div key={i} className="bg-slate-800/40 rounded-xl aspect-[3/2] animate-pulse border border-slate-700/40" />
+                        ))}
+                    </div>
+                ) : filteredListings.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {filteredListings.map((listing, index) => (
                             <ListingCard key={listing.id} listing={listing} index={index} />
@@ -65,14 +71,18 @@ const Listings = () => {
                         </div>
                         <h3 className="text-xl font-bold text-white mb-2">İlan Bulunamadı</h3>
                         <p className="text-slate-400">
-                            "{searchTerm}" aramasına uygun ilan bulamadık. Lütfen farklı bir arama yapmayı deneyin.
+                            {searchTerm
+                                ? `"${searchTerm}" aramasına uygun ilan bulamadık. Lütfen farklı bir arama yapmayı deneyin.`
+                                : 'Henüz ilan eklenmemiş.'}
                         </p>
-                        <button
-                            onClick={() => setSearchTerm('')}
-                            className="mt-6 text-secondary hover:text-white font-medium hover:underline transition-colors"
-                        >
-                            Aramayı Temizle
-                        </button>
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                className="mt-6 text-secondary hover:text-white font-medium hover:underline transition-colors"
+                            >
+                                Aramayı Temizle
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

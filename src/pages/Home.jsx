@@ -6,7 +6,7 @@ import OpportunitySlider from '../components/OpportunitySlider';
 import WhatsAppButton from '../components/WhatsAppButton';
 
 const Home = () => {
-    const { listings } = useListings();
+    const { listings, loading } = useListings();
 
     // Filter Opportunity Listings
     const opportunityListings = listings.filter(listing => listing.is_opportunity);
@@ -28,7 +28,13 @@ const Home = () => {
                 </div>
 
                 <div className="pt-4">
-                    {opportunityListings.length > 0 ? (
+                    {loading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="bg-white rounded-xl aspect-[3/2] animate-pulse border border-slate-100 shadow-sm" />
+                            ))}
+                        </div>
+                    ) : opportunityListings.length > 0 ? (
                         <OpportunitySlider listings={opportunityListings} />
                     ) : (
                         <p className="text-center text-slate-600 bg-white/50 p-8 rounded-xl">Henüz fırsat ilanı bulunmuyor.</p>
